@@ -41,5 +41,6 @@ FROM base as final
 
 ENV PATH="/app/.venv/bin:$PATH"
 COPY --from=builder /app/.venv .venv
+COPY ./entrypoint.sh /entrypoint.sh
 
-ENTRYPOINT [ "carte" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
