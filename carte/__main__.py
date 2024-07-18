@@ -29,6 +29,20 @@ async def cookie_ctx_processor(request: web.Request) -> dict[str, Any]:
     }
 
 
+async def add_headers(
+    request: web.Request, response: web.StreamResponse  # noqa: ARG001
+) -> None:
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'none'; "
+        "connect-src 'self'; "
+        "img-src 'self'; "
+        "script-src 'self'; "
+        "style-src 'self'; "
+        "base-uri 'none'; "
+        "form-action 'none'; "
+    )
+
+
 async def close_websockets(app: web.Application) -> None:
     async with asyncio.TaskGroup() as tg:
         websockets = app[app_keys.websockets]
@@ -54,6 +68,8 @@ def main() -> None:
 
     app[aiohttp_jinja2.static_root_key] = "/static"
     app.router.add_static("/static", Path(__file__).parent / "static", name="static")
+
+    app.on_response_prepare.append(add_headers)
 
     app[app_keys.websockets] = WeakSet()
     app.on_shutdown.append(close_websockets)
