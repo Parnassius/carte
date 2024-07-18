@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ static("games/base.css") }}" />
+  <link rel="stylesheet" href="{{ static("games/" ~ game ~ ".css") }}" />
+  <script type="module" src="{{ static("games/base.js") }}"></script>
+  <script type="module" src="{{ static("games/" ~ game ~ ".js") }}"></script>
+{% endblock %}
+
+{% block main %}
+  <section
+    id="game-area"
+    data-game="{{ game }}"
+    data-card-type="{{ card_type }}"
+  >
+    <div id="new-game">
+      <input id="new-game-id" type="text" placeholder="Game ID (optional)" />
+      <button id="new-game-start">Start game</button>
+    </div>
+  </section>
+  <section id="toasts"></section>
+  <section id="results" popover="manual">
+    <table id="results-table"></table>
+    <button id="results-rematch">Rematch</button>
+  </section>
+{% endblock %}

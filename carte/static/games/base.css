@@ -1,0 +1,349 @@
+#game-area {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+
+  &[data-card-type="piacentine"] div {
+    --card-width-inner: 0.51;
+    --card-height-inner: 0.91;
+    --card-radius: calc(0.06 * var(--unit));
+    --card-image: url("../piacentine.webp");
+    --card-image-back: url("../piacentine-back.webp");
+  }
+
+  div {
+    --gap-raw: 0.05;
+    --gap: calc(var(--gap-raw) * var(--unit));
+
+    --card-width-raw: calc(var(--card-width-inner) + var(--card-border-width-raw) * 2);
+    --card-width: calc(var(--card-width-raw) * var(--unit));
+    --card-height-raw: calc(var(--card-height-inner) + var(--card-border-width-raw) * 2);
+    --card-height: calc(var(--card-height-raw) * var(--unit));
+
+    --card-border-width-raw: 0.006;
+    --card-border-width: calc(var(--card-border-width-raw) * var(--unit));
+    --card-border-color: #999;
+
+    --deck-shadow-max-width-raw: calc(var(--card-border-width-raw) * 6);
+    --deck-shadow-amount: 6;
+    --deck-shadow-width-raw: calc(
+      var(--card-border-width-raw) *
+      var(--deck-shadow-amount)
+    );
+    --deck-shadow-width: calc(var(--deck-shadow-width-raw) * var(--unit));
+    --deck-shadow-color: #777;
+
+    --left: var(--gap);
+    --center-x: calc(50vw - var(--card-width) / 2);
+    --right: calc(100vw - var(--card-width) - var(--gap));
+
+    --top: var(--gap);
+    --center-y: calc(50vh - var(--card-height) / 2);
+    --bottom: calc(100vh - var(--card-height) - var(--gap));
+
+    --rotation-diff: calc((var(--card-height) - var(--card-width)) / 2);
+
+    --card-bg-x: -1;
+    --card-bg-y: -1;
+
+    &.card {
+      width: var(--card-width);
+      height: var(--card-height);
+      border: var(--card-border-width) solid var(--card-border-color);
+      border-radius: var(--card-radius);
+      background-image: var(--card-image);
+      background-position: calc(var(--card-bg-x) * -100%) calc(var(--card-bg-y) * -100%);
+      background-size: 1000% 400%;
+      position: absolute;
+      transition-property: top, left, rotate;
+      transition-duration: 0.5s;
+
+      @starting-style {
+        top: var(--card-starting-y) !important;
+        left: var(--card-starting-x) !important;
+      }
+
+      &::after {
+        content: "";
+        display: none;
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+        border-radius: var(--card-radius);
+        box-shadow: 0 0 calc(var(--gap) / 2) calc(var(--gap) / 1.5)
+          var(--highlight-high-contrast);
+      }
+
+      &[data-suit="bastoni"] {
+        --card-bg-y: 0;
+      }
+      &[data-suit="coppe"] {
+        --card-bg-y: 1;
+      }
+      &[data-suit="denari"] {
+        --card-bg-y: 2;
+      }
+      &[data-suit="spade"] {
+        --card-bg-y: 3;
+      }
+
+      &[data-number="1"] {
+        --card-bg-x: 0;
+      }
+      &[data-number="2"] {
+        --card-bg-x: 1;
+      }
+      &[data-number="3"] {
+        --card-bg-x: 2;
+      }
+      &[data-number="4"] {
+        --card-bg-x: 3;
+      }
+      &[data-number="5"] {
+        --card-bg-x: 4;
+      }
+      &[data-number="6"] {
+        --card-bg-x: 5;
+      }
+      &[data-number="7"] {
+        --card-bg-x: 6;
+      }
+      &[data-number="fante"] {
+        --card-bg-x: 7;
+      }
+      &[data-number="cavallo"] {
+        --card-bg-x: 8;
+      }
+      &[data-number="re"] {
+        --card-bg-x: 9;
+      }
+
+      &[data-back] {
+        background-image: var(--card-image-back);
+        background-size: 100% 100%;
+      }
+
+      &[data-rotated] {
+        --card-rotation-angle: 90deg;
+        rotate: var(--card-rotation-angle);
+        &[data-deck-count]::before {
+          rotate: calc(var(--card-rotation-angle) + 90deg);
+          writing-mode: vertical-rl;
+        }
+        &[data-rotated="back"] {
+          --card-rotation-angle: -90deg;
+        }
+      }
+
+      &[data-deck] {
+        box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
+          calc(var(--card-border-width) * var(--deck-shadow-y)) var(--deck-shadow-color),
+          calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
+          calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
+          var(--card-border-color),
+          calc(var(--card-border-width) * 3 * var(--deck-shadow-x))
+          calc(var(--card-border-width) * 3 * var(--deck-shadow-y))
+          var(--deck-shadow-color),
+          calc(var(--card-border-width) * 4 * var(--deck-shadow-x))
+          calc(var(--card-border-width) * 4 * var(--deck-shadow-y))
+          var(--card-border-color),
+          calc(var(--card-border-width) * 5 * var(--deck-shadow-x))
+          calc(var(--card-border-width) * 5 * var(--deck-shadow-y))
+          var(--deck-shadow-color),
+          calc(var(--card-border-width) * 6 * var(--deck-shadow-x))
+          calc(var(--card-border-width) * 6 * var(--deck-shadow-y))
+          var(--card-border-color);
+        &[data-deck-count="6"] {
+          --deck-shadow-amount: 5;
+          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
+            calc(var(--card-border-width) * var(--deck-shadow-y))
+            var(--deck-shadow-color),
+            calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
+            var(--card-border-color),
+            calc(var(--card-border-width) * 3 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 3 * var(--deck-shadow-y))
+            var(--deck-shadow-color),
+            calc(var(--card-border-width) * 4 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 4 * var(--deck-shadow-y))
+            var(--card-border-color),
+            calc(var(--card-border-width) * 5 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 5 * var(--deck-shadow-y))
+            var(--deck-shadow-color);
+        }
+        &[data-deck-count="5"] {
+          --deck-shadow-amount: 4;
+          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
+            calc(var(--card-border-width) * var(--deck-shadow-y))
+            var(--deck-shadow-color),
+            calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
+            var(--card-border-color),
+            calc(var(--card-border-width) * 3 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 3 * var(--deck-shadow-y))
+            var(--deck-shadow-color),
+            calc(var(--card-border-width) * 4 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 4 * var(--deck-shadow-y))
+            var(--card-border-color);
+        }
+        &[data-deck-count="4"] {
+          --deck-shadow-amount: 3;
+          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
+            calc(var(--card-border-width) * var(--deck-shadow-y))
+            var(--deck-shadow-color),
+            calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
+            var(--card-border-color),
+            calc(var(--card-border-width) * 3 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 3 * var(--deck-shadow-y))
+            var(--deck-shadow-color);
+        }
+        &[data-deck-count="3"] {
+          --deck-shadow-amount: 2;
+          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
+            calc(var(--card-border-width) * var(--deck-shadow-y))
+            var(--deck-shadow-color),
+            calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
+            calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
+            var(--card-border-color);
+        }
+        &[data-deck-count="2"] {
+          --deck-shadow-amount: 1;
+          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
+            calc(var(--card-border-width) * var(--deck-shadow-y))
+            var(--deck-shadow-color);
+        }
+        &[data-deck-count="1"] {
+          --deck-shadow-amount: 0;
+          box-shadow: none;
+        }
+        &[data-deck-count="0"] {
+          visibility: hidden;
+        }
+        &[data-deck-count]:hover {
+          --card-border-color: #bbb;
+          --deck-shadow-color: #999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          &::before {
+            content: attr(data-deck-count);
+            position: absolute;
+            inset: 0;
+            color: #000;
+            font-size: calc(0.25 * var(--unit));
+            text-align: center;
+            align-content: center;
+            background-color: #fff4;
+            border-radius: calc(var(--card-radius));
+            backdrop-filter: blur(calc(0.006 * var(--unit)));
+          }
+        }
+        &[data-deck="tl"],
+        &[data-deck="bl"] {
+          --deck-shadow-x: -1;
+        }
+        &[data-deck="tr"],
+        &[data-deck="br"] {
+          --deck-shadow-x: 1;
+        }
+        &[data-deck="tl"],
+        &[data-deck="tr"] {
+          --deck-shadow-y: -1;
+        }
+        &[data-deck="bl"],
+        &[data-deck="br"] {
+          --deck-shadow-y: 1;
+        }
+      }
+    }
+
+    &.name-tag {
+      position: absolute;
+      width: var(--card-height);
+      font-size: 1rem;
+      text-align: center;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+#new-game {
+  font-size: min(8vmin, 48px);
+  margin: 0;
+  padding: 5rem 1rem;
+  list-style: none;
+  min-height: 100vh;
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
+  justify-content: center;
+  #new-game-id {
+    text-align: center;
+  }
+}
+
+#toasts {
+  position: fixed;
+  inset: auto 0 0 auto;
+  padding: 1em;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 1em;
+  > div {
+    background-color: var(--background-secondary);
+    line-height: 2.5em;
+    padding: 0 1em;
+    border: 1px solid var(--background-secondary-highlight-strong);
+    border-radius: 0.5em;
+    transition: opacity 0.5s;
+    @starting-style {
+      opacity: 0;
+    }
+    &.hidden {
+      opacity: 0;
+    }
+  }
+}
+
+#results {
+  background-color: var(--background-secondary);
+  padding: 0;
+  border: 1px solid var(--background-secondary-highlight-strong);
+  border-radius: 0.5em;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  transition: opacity 0.5s;
+  &:popover-open {
+    pointer-events: auto;
+    opacity: 1;
+  }
+  #results-table {
+    border-collapse: collapse;
+    line-height: 2.5em;
+    tr {
+      border-bottom: 1px solid var(--background-secondary-highlight-strong);
+      td {
+        padding: 0 0.5em;
+        &:first-child {
+          padding-left: 1em;
+        }
+        &:last-child {
+          padding-right: 1em;
+        }
+      }
+    }
+  }
+  #results-rematch {
+    margin: 0 1em 1em;
+  }
+}

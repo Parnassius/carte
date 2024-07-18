@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="{{ theme }}">
+  <head>
+    <meta name="viewport" content="width=device-width" />
+    <title>{% block title %}Carte{% endblock %}</title>
+    <link rel="stylesheet" href="{{ static("main.css") }}" />
+    <script type="module" src="{{ static("main.js") }}"></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <header>
+      <button
+        id="menu-button"
+        class="icon-button"
+        popovertarget="menu"
+      ></button>
+      <nav id="menu" popover>
+        <div id="theme-selector">
+          <button id="theme-system" class="icon-button"></button>
+          <button id="theme-light" class="icon-button"></button>
+          <button id="theme-dark" class="icon-button"></button>
+        </div>
+        <input
+          type="text"
+          id="username"
+          placeholder="Username"
+          value="{{ username }}"
+        />
+        <menu>
+          <li>
+            <a href="{{ url("index") }}">Home</a>
+          </li>
+          {% for game_id, game_name in games.items() %}
+            <li>
+              <a href="{{ url("game", game_type=game_id) }}">{{ game_name }}</a>
+            </li>
+          {% endfor %}
+        </menu>
+      </nav>
+    </header>
+    <main>{% block main required %}{% endblock %}</main>
+  </body>
+</html>

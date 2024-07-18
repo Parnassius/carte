@@ -1,0 +1,99 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+# Disallow dynamic typing
+disallow_any_unimported = true
+#disallow_any_expr = true
+disallow_any_decorated = true
+#disallow_any_explicit = true
+
+warn_unreachable = true
+
+
+[tool.poe.tasks]
+ruff-fix = "ruff check carte --fix-only --exit-zero"
+black = "black carte"
+prettier = "npx --no prettier carte/templates --write"
+prettier-check = "npx --no prettier carte/templates --check"
+biome-fix = "npx --no @biomejs/biome check carte --write"
+format = ["ruff-fix", "black", "prettier", "biome-fix"]
+
+mypy = "mypy carte"
+ruff = "ruff check carte"
+biome = "npx --no @biomejs/biome ci --error-on-warnings carte"
+all = ["format", "mypy", "ruff", "biome"]
+
+
+[tool.poetry]
+name = "carte"
+version = "0.1.0"
+description = ""
+authors = ["Parnassius <Parnassius@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiohttp = "3.9.5"
+aiohttp-jinja2 = "1.6"
+typenv = "0.2.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "24.4.2"
+mypy = "1.10.1"
+poethepoet = "0.27.0"
+ruff = "0.5.2"
+
+[tool.poetry.scripts]
+carte = "carte.__main__:main"
+
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "A",     # flake8-builtins
+    "ARG",   # flake8-unused-arguments
+    "B",     # flake8-bugbear
+    "C4",    # flake8-comprehensions
+    "DTZ",   # flake8-datetimez
+    "E",     # pycodestyle
+    "EM",    # flake8-errmsg
+    "F",     # pyflakes
+    "I",     # isort
+    "ICN",   # flake8-import-conventions
+    "ISC",   # flake8-implicit-str-concat
+    "N",     # pep8-naming
+    "PGH",   # pygrep-hooks
+    "PTH",   # flake8-use-pathlib
+    "RET",   # flake8-return
+    "RUF",   # Ruff-specific rules
+    "T10",   # flake8-debugger
+    "TID",   # flake8-tidy-imports
+    "TRY",   # tryceratops
+    "UP",    # pyupgrade
+    "W",     # pycodestyle
+    "YTT",   # flake8-2020
+]
+ignore = [
+    "A003",  # builtin-attribute-shadowing
+]
+fixable = [
+    "I",     # isort
+    "F401",  # unused-import
+    "TID",   # flake8-tidy-imports
+    "UP",    # pyupgrade
+]
+dummy-variable-rgx = "^_$"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
+split-on-trailing-comma = false

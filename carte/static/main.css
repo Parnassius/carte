@@ -1,0 +1,268 @@
+:root {
+  --text-color: light-dark(#111, #ddd);
+
+  --background-primary: light-dark(#ccc, #444);
+  --background-primary-highlight-weak: light-dark(#bbb, #555);
+  --background-primary-highlight-strong: light-dark(#aaa, #888);
+
+  --background-secondary: light-dark(#fff, #222);
+  --background-secondary-highlight-weak: light-dark(#eee, #333);
+  --background-secondary-highlight-strong: light-dark(#ccc, #777);
+
+  --highlight-low-contrast: light-dark(#adf, #249);
+  --highlight-high-contrast: light-dark(#07c, #8ae);
+
+  --menu-width: min(20rem, calc(100vw - 5rem));
+
+  font-size: 16px;
+  font-family: system-ui;
+  color: var(--text-color);
+  background-color: var(--background-primary);
+
+  color-scheme: light dark;
+  &:is([data-theme="theme-light"]) {
+    color-scheme: light;
+  }
+  &:is([data-theme="theme-dark"]) {
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  @media (prefers-reduced-motion) {
+    transition-property: none !important;
+  }
+  [data-no-animations] & {
+    transition-property: none !important;
+  }
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--highlight-high-contrast);
+  text-decoration: none;
+}
+
+input[type="text"],
+button {
+  font-size: 1em;
+  color: var(--text-color);
+  background-color: var(--background-secondary);
+  line-height: 2.5em;
+  padding: 0 1em;
+  outline: 0 solid var(--highlight-high-contrast);
+  border: 1px solid var(--text-color);
+  border-radius: 0.5em;
+  transition-property: background-color, outline-width;
+  transition-duration: 0.5s;
+  &:focus {
+    background-color: var(--background-secondary-highlight-weak);
+    outline-width: 0.125em;
+  }
+}
+
+button {
+  cursor: pointer;
+  &:hover {
+    background-color: var(--background-secondary-highlight-weak);
+  }
+  &.loading {
+    position: relative;
+    &::after {
+      content: "";
+      display: inline-block;
+      width: 1cap;
+      height: 1cap;
+      margin-left: 0.25em;
+      border: 0.1em solid var(--background-secondary-highlight-weak);
+      border-top-color: var(--text-color);
+      border-radius: 50%;
+      animation: 1s linear infinite rotate;
+    }
+  }
+  &.icon-button {
+    position: relative;
+    font-size: 2.5em;
+    width: 1em;
+    height: 1em;
+    border-radius: 0.2em;
+    padding: 0;
+    &:focus {
+      outline-width: 0.05em;
+    }
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+    }
+  }
+}
+
+#game-list {
+  margin: 0;
+  padding: 5em 0;
+  list-style: none;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  li {
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--background-primary-highlight-strong);
+    }
+    a {
+      font-size: min(10vmin, 48px);
+      padding: 0 1em;
+      line-height: 2.5em;
+      text-align: center;
+      display: block;
+      transition-property: background-color;
+      transition-duration: 0.5s;
+      &:hover {
+        background-color: var(--background-primary-highlight-weak);
+      }
+    }
+  }
+}
+
+#menu-button {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  transition-property: translate, background-color, outline-width;
+  &::before,
+  &::after {
+    left: 0.15em;
+    right: 0.15em;
+    transition-property: top, height, rotate;
+    transition-duration: 0.5s;
+  }
+  &::before {
+    top: 0.25em;
+    height: 0.45em;
+    box-shadow: inset 0 0.075em 0 -0.025em, inset 0 -0.075em 0 -0.025em;
+  }
+  &::after {
+    top: 0.45em;
+    height: 0.05em;
+    background-color: currentColor;
+  }
+  &:has(+ #menu:popover-open) {
+    translate: calc(-1 * var(--menu-width));
+    &::before {
+      top: 0.45em;
+      height: 0.05em;
+      rotate: 45deg;
+    }
+    &::after {
+      rotate: -45deg;
+    }
+  }
+}
+#menu {
+  inset: 0 0 auto auto;
+  height: 100vh;
+  width: var(--menu-width);
+  border-width: 0;
+  padding: 1rem;
+  background-color: var(--background-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  translate: var(--menu-width);
+  transition: translate 0.5s;
+  &:popover-open {
+    translate: 0;
+    @starting-style {
+      translate: var(--menu-width);
+    }
+  }
+
+  menu {
+    margin: 0 -1rem;
+    padding: 0;
+    list-style: none;
+    li {
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--background-secondary-highlight-strong);
+      }
+      a {
+        padding: 0 1rem;
+        line-height: 2.5em;
+        display: block;
+        transition-property: background-color;
+        transition-duration: 0.5s;
+        &:hover {
+          background-color: var(--background-secondary-highlight-weak);
+        }
+      }
+    }
+  }
+}
+
+#theme-selector {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25em;
+  #theme-system {
+    &::before {
+      inset: 0.1em;
+      border: 0.05em solid;
+      border-radius: 50%;
+      background-image: linear-gradient(to right, currentColor 50%, transparent 50%);
+    }
+  }
+  #theme-light {
+    &::before,
+    &::after {
+      inset: 0.2em;
+      background-image: radial-gradient(
+        currentColor 0.15em,
+        transparent 0.15em,
+        transparent 0.2em,
+        currentColor 0.2em
+      );
+    }
+    &::after {
+      rotate: 45deg;
+    }
+  }
+  #theme-dark {
+    &::before {
+      inset: 0 0 0.35em 0.35em;
+      border-radius: 50%;
+      box-shadow: -0.15em 0.15em 0 0.05em;
+    }
+    &::after {
+      inset: 0.1em 0.15em 0.55em 0.5em;
+      background-color: currentColor;
+      mask-image: radial-gradient(at top left, transparent 36%, black 36%),
+        radial-gradient(at top right, transparent 36%, black 36%),
+        radial-gradient(at bottom left, transparent 36%, black 36%),
+        radial-gradient(at bottom right, transparent 36%, black 36%);
+      mask-composite: intersect;
+    }
+  }
+  :root:is([data-theme="theme-system"]) & #theme-system,
+  :root:is([data-theme="theme-light"]) & #theme-light,
+  :root:is([data-theme="theme-dark"]) & #theme-dark {
+    background-color: var(--highlight-low-contrast);
+  }
+}
+
+#username {
+  width: 100%;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

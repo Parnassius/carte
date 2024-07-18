@@ -1,0 +1,16 @@
+{
+  "linter": {
+    "rules": {
+      "all": true,
+    },
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 88,  // Black's default
+  },
+  "css": {
+    "formatter": {
+      "enabled": true,
+    },
+  },
+}

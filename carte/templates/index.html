@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block main %}
+  <ul id="game-list">
+    {% for game_id, game_name in games.items() %}
+      <li>
+        <a href="{{ url("game", game_type=game_id) }}">{{ game_name }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
