@@ -35,6 +35,7 @@ RUN /opt/poetry-venv/bin/poetry run poe prettier-check
 RUN /opt/poetry-venv/bin/poetry run poe mypy
 RUN /opt/poetry-venv/bin/poetry run poe ruff
 RUN /opt/poetry-venv/bin/poetry run poe biome
+RUN /opt/poetry-venv/bin/poetry run poe pytest
 
 
 FROM base as final

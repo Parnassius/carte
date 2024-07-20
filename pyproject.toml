@@ -17,17 +17,18 @@ warn_unreachable = true
 
 
 [tool.poe.tasks]
-ruff-fix = "ruff check carte --fix-only --exit-zero"
-black = "black carte"
+ruff-fix = "ruff check carte tests --fix-only --exit-zero"
+black = "black carte tests"
 prettier = "npx --no prettier carte/templates --write"
 prettier-check = "npx --no prettier carte/templates --check"
 biome-fix = "npx --no @biomejs/biome check carte --write"
 format = ["ruff-fix", "black", "prettier", "biome-fix"]
 
-mypy = "mypy carte"
-ruff = "ruff check carte"
+mypy = "mypy carte tests"
+ruff = "ruff check carte tests"
 biome = "npx --no @biomejs/biome ci --error-on-warnings carte"
-all = ["format", "mypy", "ruff", "biome"]
+pytest = "pytest"
+all = ["format", "mypy", "ruff", "biome", "pytest"]
 
 
 [tool.poetry]
@@ -46,6 +47,8 @@ typenv = "0.2.0"
 black = "24.4.2"
 mypy = "1.10.1"
 poethepoet = "0.27.0"
+pytest = "8.2.2"
+pytest-asyncio = "0.23.8"
 ruff = "0.5.2"
 
 [tool.poetry.scripts]
@@ -91,9 +94,18 @@ fixable = [
 ]
 dummy-variable-rgx = "^_$"
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG001"]
+
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 split-on-trailing-comma = false
+
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers"
+asyncio_mode = "auto"
+xfail_strict = true
