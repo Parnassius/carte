@@ -113,10 +113,9 @@ class BaseGame:
     async def _send_current_state(
         self, ws: web.WebSocketResponse, player: Player | None = None
     ) -> None:
-        if player:
-            await self._send(ws, "player_id", self._players.index(player))
-
         await self._send(ws, "players", *(x.name for x in self._players))
+        if player and self._game_status is not GameStatus.NOT_STARTED:
+            await self._send(ws, "player_id", self._players.index(player))
 
         if self._game_status is GameStatus.STARTED:
             await self._send(ws, "animations", "off")
@@ -140,6 +139,10 @@ class BaseGame:
         self._deck = self._shuffle_deck()
         self._current_player_id = self._starting_player_id
         self._game_status = GameStatus.STARTED
+
+        await self._send("players", *(x.name for x in self._players))
+        for player_id, player in enumerate(self._players):
+            await self._send(player, "player_id", player_id)
 
         await self._send("begin")
         await self._start_game()
@@ -251,21 +254,19 @@ class BaseGame:
                 await self._send_current_state(ws)
                 return
             self._players.append(player)
+            await self._send_others(ws, "players", *(x.name for x in self._players))
         else:
             player = self._players[idx]
             player.name = name
 
         player.websockets.add(ws)
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(
-                self._send_others(ws, "players", *(x.name for x in self._players))
-            )
-            tg.create_task(self._send_current_state(ws, player))
+        await self._send_current_state(ws, player)
 
         if (
             len(self._players) == self.number_of_players
             and self._game_status is GameStatus.NOT_STARTED
         ):
+            random.shuffle(self._players)
             await self._prepare_start()
 
     @cmd()
