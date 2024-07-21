@@ -75,50 +75,6 @@
           var(--highlight-high-contrast);
       }
 
-      &[data-suit="bastoni"] {
-        --card-bg-y: 0;
-      }
-      &[data-suit="coppe"] {
-        --card-bg-y: 1;
-      }
-      &[data-suit="denari"] {
-        --card-bg-y: 2;
-      }
-      &[data-suit="spade"] {
-        --card-bg-y: 3;
-      }
-
-      &[data-number="1"] {
-        --card-bg-x: 0;
-      }
-      &[data-number="2"] {
-        --card-bg-x: 1;
-      }
-      &[data-number="3"] {
-        --card-bg-x: 2;
-      }
-      &[data-number="4"] {
-        --card-bg-x: 3;
-      }
-      &[data-number="5"] {
-        --card-bg-x: 4;
-      }
-      &[data-number="6"] {
-        --card-bg-x: 5;
-      }
-      &[data-number="7"] {
-        --card-bg-x: 6;
-      }
-      &[data-number="fante"] {
-        --card-bg-x: 7;
-      }
-      &[data-number="cavallo"] {
-        --card-bg-x: 8;
-      }
-      &[data-number="re"] {
-        --card-bg-x: 9;
-      }
-
       &[data-back] {
         background-image: var(--card-image-back);
         background-size: 100% 100%;
@@ -137,87 +93,6 @@
       }
 
       &[data-deck] {
-        box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
-          calc(var(--card-border-width) * var(--deck-shadow-y)) var(--deck-shadow-color),
-          calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
-          calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
-          var(--card-border-color),
-          calc(var(--card-border-width) * 3 * var(--deck-shadow-x))
-          calc(var(--card-border-width) * 3 * var(--deck-shadow-y))
-          var(--deck-shadow-color),
-          calc(var(--card-border-width) * 4 * var(--deck-shadow-x))
-          calc(var(--card-border-width) * 4 * var(--deck-shadow-y))
-          var(--card-border-color),
-          calc(var(--card-border-width) * 5 * var(--deck-shadow-x))
-          calc(var(--card-border-width) * 5 * var(--deck-shadow-y))
-          var(--deck-shadow-color),
-          calc(var(--card-border-width) * 6 * var(--deck-shadow-x))
-          calc(var(--card-border-width) * 6 * var(--deck-shadow-y))
-          var(--card-border-color);
-        &[data-deck-count="6"] {
-          --deck-shadow-amount: 5;
-          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
-            calc(var(--card-border-width) * var(--deck-shadow-y))
-            var(--deck-shadow-color),
-            calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
-            var(--card-border-color),
-            calc(var(--card-border-width) * 3 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 3 * var(--deck-shadow-y))
-            var(--deck-shadow-color),
-            calc(var(--card-border-width) * 4 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 4 * var(--deck-shadow-y))
-            var(--card-border-color),
-            calc(var(--card-border-width) * 5 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 5 * var(--deck-shadow-y))
-            var(--deck-shadow-color);
-        }
-        &[data-deck-count="5"] {
-          --deck-shadow-amount: 4;
-          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
-            calc(var(--card-border-width) * var(--deck-shadow-y))
-            var(--deck-shadow-color),
-            calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
-            var(--card-border-color),
-            calc(var(--card-border-width) * 3 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 3 * var(--deck-shadow-y))
-            var(--deck-shadow-color),
-            calc(var(--card-border-width) * 4 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 4 * var(--deck-shadow-y))
-            var(--card-border-color);
-        }
-        &[data-deck-count="4"] {
-          --deck-shadow-amount: 3;
-          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
-            calc(var(--card-border-width) * var(--deck-shadow-y))
-            var(--deck-shadow-color),
-            calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
-            var(--card-border-color),
-            calc(var(--card-border-width) * 3 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 3 * var(--deck-shadow-y))
-            var(--deck-shadow-color);
-        }
-        &[data-deck-count="3"] {
-          --deck-shadow-amount: 2;
-          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
-            calc(var(--card-border-width) * var(--deck-shadow-y))
-            var(--deck-shadow-color),
-            calc(var(--card-border-width) * 2 * var(--deck-shadow-x))
-            calc(var(--card-border-width) * 2 * var(--deck-shadow-y))
-            var(--card-border-color);
-        }
-        &[data-deck-count="2"] {
-          --deck-shadow-amount: 1;
-          box-shadow: calc(var(--card-border-width) * var(--deck-shadow-x))
-            calc(var(--card-border-width) * var(--deck-shadow-y))
-            var(--deck-shadow-color);
-        }
-        &[data-deck-count="1"] {
-          --deck-shadow-amount: 0;
-          box-shadow: none;
-        }
         &[data-deck-count="0"] {
           visibility: hidden;
         }

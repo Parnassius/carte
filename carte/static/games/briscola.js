@@ -1,6 +1,14 @@
 import { BaseGame } from "./base.js";
 
 class Briscola extends BaseGame {
+  get playerIdentifiers() {
+    return ["opponent", "self"];
+  }
+
+  get handSize() {
+    return 3;
+  }
+
   onGameAreaClick(event) {
     if (
       "playing" in this.gameArea.dataset &&

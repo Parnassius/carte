@@ -85,18 +85,6 @@
         &[data-player="self"] {
           top: var(--bottom);
         }
-        &:nth-child(1 of [data-position="hand"][data-player="opponent"]),
-        &:nth-child(1 of [data-position="hand"][data-player="self"]) {
-          --card-hand-position: -1;
-        }
-        &:nth-child(2 of [data-position="hand"][data-player="opponent"]),
-        &:nth-child(2 of [data-position="hand"][data-player="self"]) {
-          --card-hand-position: 0;
-        }
-        &:nth-child(3 of [data-position="hand"][data-player="opponent"]),
-        &:nth-child(3 of [data-position="hand"][data-player="self"]) {
-          --card-hand-position: 1;
-        }
       }
 
       &[data-position="points"] {

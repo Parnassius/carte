@@ -10,6 +10,13 @@ class BaseGame {
     this.players = [];
     this.decks = new Map();
 
+    const sheet = new CSSStyleSheet();
+    const baseSelector = `#game-area[data-game='${this.gameArea.dataset.game}'] .card`;
+    sheet.replaceSync(`${baseSelector} {
+      ${this.styleRules.join("\n")}
+    }`);
+    document.adoptedStyleSheets.push(sheet);
+
     if (document.location.hash.startsWith("#")) {
       this.setup();
     } else {
@@ -28,6 +35,70 @@ class BaseGame {
         { once: true },
       );
     }
+  }
+
+  get playerIdentifiers() {
+    throw new Error();
+  }
+
+  get handSize() {
+    throw new Error();
+  }
+
+  get styleRules() {
+    const rules = [];
+
+    rules.push(
+      ...["bastoni", "coppe", "denari", "spade"].map(
+        (suit, i) => `&[data-suit='${suit}'] {--card-bg-y: ${i}}`,
+      ),
+    );
+    rules.push(
+      ...["1", "2", "3", "4", "5", "6", "7", "fante", "cavallo", "re"].map(
+        (number, i) => `&[data-number='${number}'] {--card-bg-x: ${i}}`,
+      ),
+    );
+
+    for (let i = 1; i <= this.handSize; i++) {
+      for (let j = 1; j <= this.handSize; j++) {
+        const nthChildSelectors = this.playerIdentifiers.map(
+          (player) =>
+            `:nth-child(${i} of [data-position='hand'][data-player='${player}'])` +
+            `:nth-last-child(${j} of [data-position='hand'][data-player='${player}'])`,
+        );
+        rules.push(`&[data-position='hand']:is(${nthChildSelectors.join(", ")}) {
+          --card-hand-position: ${(i - j) / 2};
+        }`);
+      }
+    }
+
+    const deckShadows = (amount) => {
+      const shadows = [];
+      const colors = ["var(--card-border-color)", "var(--deck-shadow-color)"];
+      for (let i = 1; i <= amount; i++) {
+        shadows.push(`calc(var(--card-border-width) * ${i} * var(--deck-shadow-x))
+                      calc(var(--card-border-width) * ${i} * var(--deck-shadow-y))
+                      ${colors[i % 2]}`);
+      }
+      return shadows.join(",\n");
+    };
+    const deckShadowRules = [];
+    for (let i = 5; i >= 1; i--) {
+      deckShadowRules.push(`&[data-deck-count='${i + 1}'] {
+        --deck-shadow-amount: ${i};
+        box-shadow: ${deckShadows(i)};
+      }`);
+    }
+    deckShadowRules.push(`&[data-deck-count='1'] {
+      --deck-shadow-amount: 0;
+      box-shadow: none;
+    }`);
+    rules.push(`&[data-deck] {
+      box-shadow: ${deckShadows(6)};
+      ${deckShadowRules.join("\n")}
+    }`);
+
+    return rules;
   }
 
   get playerSide() {
