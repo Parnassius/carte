@@ -75,6 +75,11 @@ class Briscola extends BaseGame {
       card.dataset.position = "hand";
       card.dataset.player = this.getPlayerIdentifier(playerId);
       delete card.dataset.rotated;
+      if (Number.parseInt(playerId) !== this.playerId) {
+        card.dataset.back = "";
+        delete card.dataset.suit;
+        delete card.dataset.number;
+      }
     });
   }
 

@@ -35,7 +35,7 @@ class Briscola(BaseGame, number_of_players=2, hand_size=3):
 
         for player_id, player in enumerate(self._players):
             for card in player.hand:
-                if player == ws_player or card == self._briscola:
+                if player == ws_player:
                     yield ["draw_card", player_id, card.suit, card.number]
                 else:
                     yield ["draw_card", player_id]
