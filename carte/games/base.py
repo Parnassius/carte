@@ -28,6 +28,7 @@ class BaseGame:
 
     game_name: str
     number_of_players: int
+    hand_size: int
 
     def __init__(self) -> None:
         self.websockets: WeakSet[web.WebSocketResponse] = WeakSet()
@@ -40,11 +41,17 @@ class BaseGame:
         self._game_status = GameStatus.NOT_STARTED
 
     def __init_subclass__(
-        cls, *, game_name: str | None = None, number_of_players: int, **kwargs: Any
+        cls,
+        *,
+        game_name: str | None = None,
+        number_of_players: int,
+        hand_size: int,
+        **kwargs: Any,
     ) -> None:
         super().__init_subclass__(**kwargs)
         cls.game_name = game_name or cls.__name__
         cls.number_of_players = number_of_players
+        cls.hand_size = hand_size
         cls.GAMES[cls.__name__.lower()] = cls
 
     def _shuffle_deck(self) -> list[Card]:

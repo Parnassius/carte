@@ -8,7 +8,7 @@ from carte.games.base import BaseGame, cmd
 from carte.types import Card, CardNumber, GameStatus, Player, Suit
 
 
-class Briscola(BaseGame, number_of_players=2):
+class Briscola(BaseGame, number_of_players=2, hand_size=3):
     def __init__(self) -> None:
         super().__init__()
 
@@ -55,7 +55,7 @@ class Briscola(BaseGame, number_of_players=2):
             yield ["turn"]
 
     async def _start_game(self) -> None:
-        for _ in range(3):
+        for _ in range(self.hand_size):
             for i in range(self.number_of_players):
                 player_id = (self._current_player_id + i) % self.number_of_players
                 await self._draw_card(self._players[player_id])
