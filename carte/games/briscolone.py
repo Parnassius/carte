@@ -3,72 +3,27 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any
 
-from carte.exc import CmdError
-from carte.games.base import BaseGame, cmd
-from carte.types import Card, CardNumber, GameStatus, Player, Suit
+from carte.games.briscola import Briscola
+from carte.types import Player
 
 
-class Briscola(BaseGame, number_of_players=2, hand_size=3):
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._card_points = {
-            CardNumber.DUE: 0,
-            CardNumber.QUATTRO: 0,
-            CardNumber.CINQUE: 0,
-            CardNumber.SEI: 0,
-            CardNumber.SETTE: 0,
-            CardNumber.FANTE: 2,
-            CardNumber.CAVALLO: 3,
-            CardNumber.RE: 4,
-            CardNumber.TRE: 10,
-            CardNumber.ASSO: 11,
-        }
-
-        self._briscola: Card
-        self._briscola_drawn = False
-        self._played_cards: dict[Player, Card] = {}
-
+class Briscolone(Briscola, number_of_players=5, hand_size=8):
     def _board_state(self, ws_player: Player | None) -> Iterator[list[Any]]:
-        if not self._briscola_drawn:
-            yield ["show_briscola", self._briscola.suit, self._briscola.number]
-
-        for player_id, player in enumerate(self._players):
-            for card in player.hand:
-                if player == ws_player:
-                    yield ["draw_card", player_id, card.suit, card.number]
-                else:
-                    yield ["draw_card", player_id]
-
-        for player, card in self._played_cards.items():
-            player_id = self._players.index(player)
-            yield ["draw_card", player_id, card.suit, card.number]
-            yield ["play_card", player_id, card.suit, card.number]
-
-        for player_id, player in enumerate(self._players):
-            if player.points:
-                yield ["points", player_id, len(player.points)]
-
-        yield ["deck_count", "deck", len(self._deck)]
-
-        if ws_player and self._players.index(ws_player) == self._current_player_id:
-            yield ["turn"]
+        # TODO: briscola e chiamante sopra al nome?
+        yield from super()._board_state(ws_player)
 
     async def _start_game(self) -> None:
         await self._deal_cards()
-        await self._show_briscola()
 
-    async def _deal_cards(self) -> None:
-        for _ in range(self.hand_size):
-            for i in range(self.number_of_players):
-                player_id = (self._current_player_id + i) % self.number_of_players
-                await self._draw_card(self._players[player_id])
-
+    """
     async def _show_briscola(self) -> None:
-        self._briscola = self._deck.pop()
-        self._briscola_drawn = False
+        # TODO: chiamata
+        self._briscola = self._players[0].hand[0]
+        self._briscola_drawn = True
         await self._send("show_briscola", self._briscola.suit, self._briscola.number)
+    """
 
+    """
     @cmd(game_status=GameStatus.STARTED, current_player=True)
     async def cmd_play(self, suit: Suit, number: CardNumber) -> None:
         card = Card(suit, number)
@@ -135,3 +90,4 @@ class Briscola(BaseGame, number_of_players=2, hand_size=3):
             ) % self.number_of_players
 
         await self._send(self.current_player, "turn")
+    """

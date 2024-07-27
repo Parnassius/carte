@@ -1,6 +1,6 @@
 import { BaseGame } from "./base.js";
 
-class Briscola extends BaseGame {
+export class Briscola extends BaseGame {
   get playerIdentifiers() {
     return ["opponent", "self"];
   }
@@ -23,8 +23,7 @@ class Briscola extends BaseGame {
     return Number.parseInt(playerId) === this.playerSide ? "self" : "opponent";
   }
 
-  async cmdBegin() {
-    await super.cmdBegin();
+  async createDecks() {
     const deck = this.createCard(
       new Map([
         ["position", "deck"],
@@ -98,4 +97,6 @@ class Briscola extends BaseGame {
   }
 }
 
-new Briscola();
+if (document.getElementById("game-area").dataset.game === "briscola") {
+  new Briscola().setup();
+}

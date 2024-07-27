@@ -18,21 +18,19 @@
       ),
       calc(
         100vh /
-        (
-          var(--card-height-raw) *
-          4 +
-          var(--gap-raw) *
-          4 +
-          var(--deck-shadow-max-width-raw) *
-          2
-        )
+        (var(--card-height-raw) * 3.5 + var(--gap-raw) * 2 + var(--gap-big-raw) * 2)
       )
     );
 
     @media (orientation: portrait) {
       --center-x: calc(
         50vw +
-        (var(--left) + var(--card-height) - var(--card-width)) /
+        (
+          var(--gap) +
+          var(--card-height) +
+          var(--deck-shadow-max-width) -
+          var(--card-width)
+        ) /
         2
       );
     }

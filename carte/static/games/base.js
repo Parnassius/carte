@@ -1,6 +1,7 @@
-class BaseGame {
+export class BaseGame {
   constructor() {
     this.pendingHandler = Promise.resolve();
+    this.ws = null;
     this.gameArea = document.getElementById("game-area");
     this.toasts = document.getElementById("toasts");
     this.positionAttributes = ["position", "player", "rotated"];
@@ -16,25 +17,6 @@ class BaseGame {
       ${this.styleRules.join("\n")}
     }`);
     document.adoptedStyleSheets.push(sheet);
-
-    if (document.location.hash.startsWith("#")) {
-      this.setup();
-    } else {
-      document.getElementById("new-game-start").addEventListener(
-        "click",
-        () => {
-          let gameId = document.getElementById("new-game-id").value.trim();
-          if (!gameId) {
-            const arr = new Uint32Array(4);
-            window.crypto.getRandomValues(arr);
-            gameId = Array.from(arr, (x) => x.toString(16).padStart(8, "0")).join("");
-          }
-          document.location.hash = gameId;
-          this.setup();
-        },
-        { once: true },
-      );
-    }
   }
 
   get playerIdentifiers() {
@@ -106,7 +88,27 @@ class BaseGame {
   }
 
   setup() {
-    this.gameId = document.location.hash.substring(1);
+    const hash = document.location.hash;
+
+    if (!hash.startsWith("#")) {
+      document.getElementById("new-game-start").addEventListener(
+        "click",
+        () => {
+          let gameId = document.getElementById("new-game-id").value.trim();
+          if (!gameId) {
+            const arr = new Uint32Array(4);
+            window.crypto.getRandomValues(arr);
+            gameId = Array.from(arr, (x) => x.toString(16).padStart(8, "0")).join("");
+          }
+          document.location.hash = gameId;
+          this.setup();
+        },
+        { once: true },
+      );
+      return;
+    }
+
+    this.gameId = hash.substring(1);
 
     document.getElementById("new-game-id").value = this.gameId;
     document.getElementById("new-game-start").classList.add("loading");
@@ -124,15 +126,17 @@ class BaseGame {
   }
 
   connect() {
-    const url = new URL(document.location.href);
-    url.protocol = url.protocol.replace("http", "ws");
-    url.pathname = `/ws${url.pathname}/${this.gameId}`;
-    url.hash = "";
-    this.ws = new WebSocket(url);
-    this.ws.addEventListener("open", this.onWsOpen.bind(this));
-    this.ws.addEventListener("message", this.onWsMessage.bind(this));
-    this.ws.addEventListener("close", this.onWsClose.bind(this));
-    this.ws.addEventListener("error", this.onWsError.bind(this));
+    if (!this.ws) {
+      const url = new URL(document.location.href);
+      url.protocol = url.protocol.replace("http", "ws");
+      url.pathname = `/ws${url.pathname}/${this.gameId}`;
+      url.hash = "";
+      this.ws = new WebSocket(url);
+      this.ws.addEventListener("open", this.onWsOpen.bind(this));
+      this.ws.addEventListener("message", this.onWsMessage.bind(this));
+      this.ws.addEventListener("close", this.onWsClose.bind(this));
+      this.ws.addEventListener("error", this.onWsError.bind(this));
+    }
   }
 
   onWsOpen() {
@@ -151,15 +155,14 @@ class BaseGame {
     this.pendingHandler = this.handleCmd(...event.data.split("|"));
   }
 
-  async onWsClose() {
+  onWsClose() {
     this.ws = null;
     delete this.gameArea.dataset.playing;
     this.createToast(
       "Connection lost... reconnecting",
       new Map([["permanent", "connection-lost"]]),
     );
-    await this.sleep(5000);
-    this.connect();
+    window.setTimeout(() => this.connect(), 5000);
   }
 
   onWsError(event) {
@@ -234,7 +237,7 @@ class BaseGame {
     }
     this.toasts.appendChild(toast);
     if (!params.has("permanent")) {
-      window.setTimeout(async () => this.hideToast(toast), 5000);
+      window.setTimeout(() => this.hideToast(toast), 5000);
     }
   }
 
@@ -259,10 +262,21 @@ class BaseGame {
     }
   }
 
+  createDecks() {
+    throw new Error();
+  }
+
   addCardParams(card, params) {
     for (const [key, value] of params.entries()) {
       card.dataset[key] = value;
     }
+  }
+
+  getDrawnCardParams(playerId) {
+    return new Map([
+      ["position", "hand"],
+      ["player", this.getPlayerIdentifier(playerId)],
+    ]);
   }
 
   async createCard(params) {
@@ -339,6 +353,7 @@ class BaseGame {
     this.gameStarted = true;
     this.gameArea.replaceChildren();
     this.createNameTags();
+    this.createDecks();
     const results = document.getElementById("results");
     await this.awaitTransition(results, () => {
       results.hidePopover();
@@ -376,10 +391,7 @@ class BaseGame {
   }
 
   async cmdDrawCard(playerId, suit = null, number = null) {
-    const params = new Map([
-      ["position", "hand"],
-      ["player", this.getPlayerIdentifier(playerId)],
-    ]);
+    const params = this.getDrawnCardParams(playerId);
     if (suit !== null && number !== null) {
       params.set("suit", suit);
       params.set("number", number);
@@ -416,5 +428,3 @@ class BaseGame {
     document.getElementById("results").showPopover();
   }
 }
-
-export { BaseGame };
