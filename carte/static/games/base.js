@@ -116,7 +116,7 @@ class BaseGame {
       event.target.classList.add("loading");
       this.send("rematch");
     });
-    document.getElementById("username").addEventListener("blur", (event) => {
+    document.getElementById("username").addEventListener("change", (event) => {
       this.send("name", event.target.value);
     });
 

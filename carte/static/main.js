@@ -23,7 +23,7 @@ document.getElementById("theme-selector").addEventListener("click", (event) => {
   }
 });
 
-document.getElementById("username").addEventListener("blur", () => {
+document.getElementById("username").addEventListener("change", () => {
   setRandomUsername();
   refreshCookies();
 });
