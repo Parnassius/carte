@@ -20,6 +20,12 @@ async def index(request: web.Request) -> Mapping[str, Any]:  # noqa: ARG001
     return {}
 
 
+@routes.get("/status")
+@aiohttp_jinja2.template("status.html")
+async def status(request: web.Request) -> Mapping[str, Any]:
+    return {"active_games": request.app[app_keys.games]}
+
+
 @routes.get("/{game_type}", name="game")
 @aiohttp_jinja2.template("game.html")
 async def game(request: web.Request) -> Mapping[str, Any]:

@@ -2,7 +2,6 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  z-index: -1;
 
   &[data-card-type="piacentine"] div {
     --card-width-inner: 0.51;

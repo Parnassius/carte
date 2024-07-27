@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ static("status.css") }}" />
+{% endblock %}
+
+{% block main %}
+  <table id="active-games">
+    <thead>
+      <tr>
+        <th>Game</th>
+        <th>Status</th>
+        <th>Players</th>
+        <th>Connections</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for (game_type, game_id), game in active_games.items() %}
+        <tr>
+          <td>
+            <a href="{{ url("game", game_type=game_type) }}#{{ game_id }}"></a>
+            {{ game.game_name }}
+          </td>
+          <td>{{ game._game_status.name }}</td>
+          <td>
+            {% for player in game._players %}
+              {{ player.name }}
+              <br />
+            {% endfor %}
+          </td>
+          <td>{{ game.websockets|length }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

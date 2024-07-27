@@ -1,0 +1,27 @@
+#active-games {
+  margin-top: 5em;
+  width: 100%;
+  border-collapse: collapse;
+  th,
+  td {
+    padding: 0.5em;
+    text-align: center;
+  }
+  tbody {
+    tr {
+      position: relative;
+      border-top: 1px solid var(--background-primary-highlight-strong);
+      transition: background-color 0.5s;
+      &:hover {
+        background-color: var(--background-primary-highlight-weak);
+      }
+      td {
+        a::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+        }
+      }
+    }
+  }
+}
