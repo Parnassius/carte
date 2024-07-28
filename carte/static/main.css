@@ -129,11 +129,15 @@ button {
   }
 }
 
+header {
+  position: relative;
+  z-index: 1;
+}
+
 #menu-button {
   position: fixed;
   top: 1rem;
   right: 1rem;
-  z-index: 1;
   transition-property: translate, background-color, outline-width;
   &::before,
   &::after {
