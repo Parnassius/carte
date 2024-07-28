@@ -26,6 +26,7 @@ def cmd(
 class BaseGame:
     GAMES: ClassVar[dict[str, type[BaseGame]]] = {}
 
+    version: int
     game_name: str
     number_of_players: int
     hand_size: int
@@ -43,16 +44,31 @@ class BaseGame:
     def __init_subclass__(
         cls,
         *,
+        version: int,
         game_name: str | None = None,
         number_of_players: int,
         hand_size: int,
         **kwargs: Any,
     ) -> None:
         super().__init_subclass__(**kwargs)
+        cls.version = version
         cls.game_name = game_name or cls.__name__
         cls.number_of_players = number_of_players
         cls.hand_size = hand_size
         cls.GAMES[cls.__name__.lower()] = cls
+
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        del state["websockets"]
+        del state["_recv_lock"]
+        del state["_send_lock"]
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.websockets = WeakSet()
+        self._recv_lock = asyncio.Lock()
+        self._send_lock = asyncio.Lock()
+        self.__dict__.update(state)
 
     def _shuffle_deck(self) -> list[Card]:
         cards = [

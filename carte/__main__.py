@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import shelve
 import urllib.parse
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,24 @@ async def cookie_ctx_processor(request: web.Request) -> dict[str, Any]:
     }
 
 
+async def cleanup_saved_games(app: web.Application) -> None:
+    async def _cleanup_saved_games() -> None:
+        while True:
+            with shelve.open(app[app_keys.games_shelf_path]) as shelf:  # type: ignore[arg-type]
+                for key in shelf.keys():
+                    try:
+                        saved_game = shelf[key]
+                    except Exception:
+                        del shelf[key]
+                    else:
+                        if not saved_game.is_valid:
+                            del shelf[key]
+
+            await asyncio.sleep(12 * 60 * 60)
+
+    app[app_keys.cleanup_task] = asyncio.create_task(_cleanup_saved_games())
+
+
 async def add_headers(
     request: web.Request, response: web.StreamResponse  # noqa: ARG001
 ) -> None:
@@ -55,6 +74,9 @@ def main() -> None:
     env.read_env()
 
     port = env.int("PORT")
+    data_path = Path(__file__).parent.parent
+    if data_path_ := env.str("DATA_PATH", default=""):
+        data_path = Path(data_path_)
 
     app = web.Application()
 
@@ -69,12 +91,15 @@ def main() -> None:
     app[aiohttp_jinja2.static_root_key] = "/static"
     app.router.add_static("/static", Path(__file__).parent / "static", name="static")
 
+    app.on_startup.append(cleanup_saved_games)
+
     app.on_response_prepare.append(add_headers)
 
     app[app_keys.websockets] = WeakSet()
     app.on_shutdown.append(close_websockets)
 
     app[app_keys.games] = WeakValueDictionary()
+    app[app_keys.games_shelf_path] = data_path / "games"
 
     web.run_app(app, port=port)
 

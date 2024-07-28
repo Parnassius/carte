@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import secrets
+import shelve
 from collections.abc import Mapping
 from typing import Any
 
@@ -10,6 +11,7 @@ from aiohttp import web
 from carte import app_keys
 from carte.exc import CmdError
 from carte.games import BaseGame
+from carte.types import GameStatus, SavedGame
 
 routes = web.RouteTableDef()
 
@@ -23,7 +25,15 @@ async def index(request: web.Request) -> Mapping[str, Any]:  # noqa: ARG001
 @routes.get("/status")
 @aiohttp_jinja2.template("status.html")
 async def status(request: web.Request) -> Mapping[str, Any]:
-    return {"active_games": request.app[app_keys.games]}
+    with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:  # type: ignore[arg-type]
+        saved_games = {
+            key.partition("__")[::2]: saved_game.game
+            for key, saved_game in shelf.items()
+        }
+    return {
+        "active_games": request.app[app_keys.games],
+        "saved_games": saved_games,
+    }
 
 
 @routes.get("/{game_type}", name="game")
@@ -41,12 +51,17 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
     game_id = request.match_info["game_id"]
     game = request.app[app_keys.games].get((game_type, game_id))
     if game is None:
+        with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:  # type: ignore[arg-type]
+            saved_game = shelf.get(f"{game_type}__{game_id}")
+            if saved_game and saved_game.is_valid:
+                game = saved_game.game
+                del shelf[f"{game_type}__{game_id}"]
+    if game is None:
         try:
             game = BaseGame.GAMES[game_type]()
         except (KeyError, ValueError) as e:
             raise web.HTTPBadRequest from e
-        else:
-            request.app[app_keys.games][game_type, game_id] = game
+    request.app[app_keys.games][game_type, game_id] = game
 
     ws = web.WebSocketResponse(heartbeat=15)
     try:
@@ -70,6 +85,11 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
                 await ws.send_str("|".join(x.replace("|", "") for x in args))
 
     finally:
+        game.websockets.discard(ws)
         request.app[app_keys.websockets].discard(ws)
+
+    if len(game.websockets) == 0 and game._game_status != GameStatus.NOT_STARTED:
+        with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:  # type: ignore[arg-type]
+            shelf[f"{game_type}__{game_id}"] = SavedGame(game, game.version)
 
     return ws

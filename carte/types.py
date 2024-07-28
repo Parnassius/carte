@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from dataclasses import InitVar, dataclass, field
+from datetime import UTC, datetime, timedelta
 from enum import Enum, StrEnum, auto
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from weakref import WeakSet
 
 from aiohttp import web
+
+if TYPE_CHECKING:
+    from carte.games.base import BaseGame
 
 
 class GameStatus(Enum):
@@ -61,6 +65,15 @@ class Player:
     def __hash__(self) -> int:
         return hash(self._token)
 
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        del state["websockets"]
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        self.websockets = WeakSet()
+
     def reset(self) -> None:
         self.ready = False
         self.hand.clear()
@@ -75,3 +88,18 @@ class Command(Generic[CmdFunc]):  # type: ignore[misc]
     func: CmdFunc
     game_status: GameStatus | None
     current_player: bool
+
+
+@dataclass
+class SavedGame:
+    game: BaseGame
+    version: int
+    last_saved: datetime = field(default_factory=lambda: datetime.now(UTC), init=False)
+
+    @property
+    def is_valid(self) -> bool:
+        if self.last_saved + timedelta(days=7) < datetime.now(UTC):
+            return False
+        if self.version != type(self.game).version:
+            return False
+        return True

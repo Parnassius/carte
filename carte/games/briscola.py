@@ -8,7 +8,7 @@ from carte.games.base import BaseGame, cmd
 from carte.types import Card, CardNumber, GameStatus, Player, Suit
 
 
-class Briscola(BaseGame, number_of_players=2, hand_size=3):
+class Briscola(BaseGame, version=1, number_of_players=2, hand_size=3):
     def __init__(self) -> None:
         super().__init__()
 
