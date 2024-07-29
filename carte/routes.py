@@ -29,6 +29,7 @@ async def status(request: web.Request) -> Mapping[str, Any]:
         saved_games = {
             key.partition("__")[::2]: saved_game.game
             for key, saved_game in shelf.items()
+            if saved_game.is_valid
         }
     return {
         "active_games": request.app[app_keys.games],
