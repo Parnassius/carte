@@ -3,6 +3,19 @@
   <head>
     <meta name="viewport" content="width=device-width" />
     <title>{% block title %}Carte{% endblock %}</title>
+    <link rel="manifest" href="{{ static("manifest.json") }}" />
+    <link
+      rel="icon"
+      href="{{ static("icon-512.webp") }}"
+      type="image/webp"
+      sizes="512x512"
+    />
+    <link
+      rel="icon"
+      href="{{ static("icon.svg") }}"
+      type="image/svg+xml"
+      sizes="any"
+    />
     <link rel="stylesheet" href="{{ static("main.css") }}" />
     <script type="module" src="{{ static("main.js") }}"></script>
     {% block head %}{% endblock %}
