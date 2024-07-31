@@ -54,6 +54,7 @@ async def add_headers(
     response.headers["Content-Security-Policy"] = (
         "default-src 'none'; "
         "connect-src 'self'; "
+        "manifest-src 'self'; "
         "img-src 'self'; "
         "script-src 'self'; "
         "style-src 'self'; "
