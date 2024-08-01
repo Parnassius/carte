@@ -33,7 +33,7 @@ async def cookie_ctx_processor(request: web.Request) -> dict[str, Any]:
 async def cleanup_saved_games(app: web.Application) -> None:
     async def _cleanup_saved_games() -> None:
         while True:
-            with shelve.open(app[app_keys.games_shelf_path]) as shelf:  # type: ignore[arg-type]
+            with shelve.open(app[app_keys.games_shelf_path]) as shelf:
                 for key in shelf.keys():
                     try:
                         saved_game = shelf[key]
