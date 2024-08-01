@@ -25,7 +25,7 @@ async def index(request: web.Request) -> Mapping[str, Any]:  # noqa: ARG001
 @routes.get("/status")
 @aiohttp_jinja2.template("status.html")
 async def status(request: web.Request) -> Mapping[str, Any]:
-    with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:  # type: ignore[arg-type]
+    with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:
         saved_games = {
             key.partition("__")[::2]: saved_game.game
             for key, saved_game in shelf.items()
@@ -52,7 +52,7 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
     game_id = request.match_info["game_id"]
     game = request.app[app_keys.games].get((game_type, game_id))
     if game is None:
-        with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:  # type: ignore[arg-type]
+        with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:
             saved_game = shelf.get(f"{game_type}__{game_id}")
             if saved_game and saved_game.is_valid:
                 game = saved_game.game
@@ -90,7 +90,7 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
         request.app[app_keys.websockets].discard(ws)
 
     if len(game.websockets) == 0 and game._game_status != GameStatus.NOT_STARTED:
-        with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:  # type: ignore[arg-type]
+        with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:
             shelf[f"{game_type}__{game_id}"] = SavedGame(game, game.version)
 
     return ws
