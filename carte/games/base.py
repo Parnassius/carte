@@ -119,7 +119,9 @@ class BaseGame:
         args = (maybe_player_or_ws, *args)
         async with self._send_lock, asyncio.TaskGroup() as tg:
             msg = "|".join(str(x).replace("|", "") for x in args)
-            for ws in websockets or self.websockets:
+            if websockets is None:
+                websockets = self.websockets
+            for ws in websockets:
                 if not ws.closed:
                     tg.create_task(self._send_str(ws, msg))
 
