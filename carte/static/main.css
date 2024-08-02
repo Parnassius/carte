@@ -132,6 +132,11 @@ button {
 header {
   position: relative;
   z-index: 1;
+  &:has(#menu:popover-open)::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+  }
 }
 
 #menu-button {
