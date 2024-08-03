@@ -375,12 +375,13 @@ class BaseGame {
     this.gameArea.dataset.playing = "";
   }
 
-  async cmdDrawCard(playerId, suit = null, number = null) {
+  async cmdDrawCard(playerId, card = null) {
     const params = new Map([
       ["position", "hand"],
       ["player", this.getPlayerIdentifier(playerId)],
     ]);
-    if (suit !== null && number !== null) {
+    if (card !== null) {
+      const [suit, number] = card.split(":");
       params.set("suit", suit);
       params.set("number", number);
     } else {
@@ -389,7 +390,8 @@ class BaseGame {
     await this.moveCardFromDeck(params);
   }
 
-  async cmdPlayCard(playerId, suit, number) {
+  async cmdPlayCard(playerId, card) {
+    const [suit, number] = card.split(":");
     await this.moveCardFromHand(
       new Map([
         ["position", "playing-area"],

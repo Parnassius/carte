@@ -5,7 +5,7 @@ from typing import Any
 
 from carte.exc import CmdError
 from carte.games.base import BaseGame, cmd
-from carte.types import Card, CardNumber, GameStatus, Player, Suit
+from carte.types import Card, CardNumber, GameStatus, Player
 
 
 class Briscola(BaseGame, version=1, number_of_players=2, hand_size=3):
@@ -31,19 +31,19 @@ class Briscola(BaseGame, version=1, number_of_players=2, hand_size=3):
 
     def _board_state(self, ws_player: Player | None) -> Iterator[list[Any]]:
         if not self._briscola_drawn:
-            yield ["show_briscola", self._briscola.suit, self._briscola.number]
+            yield ["show_briscola", self._briscola]
 
         for player_id, player in enumerate(self._players):
             for card in player.hand:
                 if player == ws_player:
-                    yield ["draw_card", player_id, card.suit, card.number]
+                    yield ["draw_card", player_id, card]
                 else:
                     yield ["draw_card", player_id]
 
         for player, card in self._played_cards.items():
             player_id = self._players.index(player)
-            yield ["draw_card", player_id, card.suit, card.number]
-            yield ["play_card", player_id, card.suit, card.number]
+            yield ["draw_card", player_id, card]
+            yield ["play_card", player_id, card]
 
         for player_id, player in enumerate(self._players):
             if player.points:
@@ -65,11 +65,10 @@ class Briscola(BaseGame, version=1, number_of_players=2, hand_size=3):
     async def _show_briscola(self) -> None:
         self._briscola = self._deck.pop()
         self._briscola_drawn = False
-        await self._send("show_briscola", self._briscola.suit, self._briscola.number)
+        await self._send("show_briscola", self._briscola)
 
     @cmd(game_status=GameStatus.STARTED, current_player=True)
-    async def cmd_play(self, suit: Suit, number: CardNumber) -> None:
-        card = Card(suit, number)
+    async def cmd_play(self, card: Card) -> None:
         try:
             self.current_player.hand.remove(card)
         except ValueError as e:
@@ -77,7 +76,7 @@ class Briscola(BaseGame, version=1, number_of_players=2, hand_size=3):
             raise CmdError(msg) from e
 
         self._played_cards[self.current_player] = card
-        await self._send("play_card", self._current_player_id, suit, number)
+        await self._send("play_card", self._current_player_id, card)
 
         if len(self._played_cards) == self.number_of_players:
             winning_card: Card | None = None

@@ -92,21 +92,23 @@ class BaseGame:
 
     @overload
     async def _send(
-        self, maybe_player_or_ws: Player | web.WebSocketResponse, *args: str | int
+        self,
+        maybe_player_or_ws: Player | web.WebSocketResponse,
+        *args: str | int | Card,
     ) -> None: ...
 
     @overload
     async def _send(
         self,
-        maybe_player_or_ws: str | int,
-        *args: str | int,
+        maybe_player_or_ws: str | int | Card,
+        *args: str | int | Card,
         websockets: Iterable[web.WebSocketResponse] | None = ...,
     ) -> None: ...
 
     async def _send(
         self,
-        maybe_player_or_ws: Player | web.WebSocketResponse | str | int,
-        *args: str | int,
+        maybe_player_or_ws: Player | web.WebSocketResponse | str | int | Card,
+        *args: str | int | Card,
         websockets: Iterable[web.WebSocketResponse] | None = None,
     ) -> None:
         if isinstance(maybe_player_or_ws, Player):
@@ -181,9 +183,7 @@ class BaseGame:
         player.hand.append(card)
         player_id = self._players.index(player)
         async with asyncio.TaskGroup() as tg:
-            tg.create_task(
-                self._send(player, "draw_card", player_id, card.suit, card.number)
-            )
+            tg.create_task(self._send(player, "draw_card", player_id, card))
             tg.create_task(self._send_others(player, "draw_card", player_id))
 
     async def handle_raw_cmd(
@@ -231,19 +231,13 @@ class BaseGame:
                     err = "You're not a player"
                     raise CmdError(err) from e
                 args.append(self._players[idx])
-            elif type_ is Suit:
-                suit = next(raw_args)
+            elif type_ is Card:
+                card = next(raw_args)
                 try:
-                    args.append(Suit(suit))
+                    suit, number = card.split(":")
+                    args.append(Card(Suit(suit), CardNumber(number)))
                 except ValueError as e:
-                    err = f"Invalid card suit: {suit}"
-                    raise CmdError(err) from e
-            elif type_ is CardNumber:
-                number = next(raw_args)
-                try:
-                    args.append(CardNumber(number))
-                except ValueError as e:
-                    err = f"Invalid card number: {number}"
+                    err = f"Invalid card: {card}"
                     raise CmdError(err) from e
             elif name != "return":
                 args.append(next(raw_args))

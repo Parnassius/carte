@@ -44,6 +44,9 @@ class Card:
     suit: Suit
     number: CardNumber
 
+    def __str__(self) -> str:
+        return f"{self.suit}:{self.number}"
+
 
 @dataclass
 class Player:

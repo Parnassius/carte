@@ -15,7 +15,7 @@ class Briscola extends BaseGame {
       event.target.matches(".card[data-position='hand'][data-player='self']")
     ) {
       delete this.gameArea.dataset.playing;
-      this.send("play", event.target.dataset.suit, event.target.dataset.number);
+      this.send("play", `${event.target.dataset.suit}:${event.target.dataset.number}`);
     }
   }
 
@@ -58,7 +58,8 @@ class Briscola extends BaseGame {
     this.decks.set("pointsSelf", await pointsSelf);
   }
 
-  async cmdShowBriscola(suit, number) {
+  async cmdShowBriscola(card) {
+    const [suit, number] = card.split(":");
     await this.moveCardFromDeck(
       new Map([
         ["position", "briscola"],

@@ -25,6 +25,6 @@ async def test_full_game(
     while game._game_status is GameStatus.STARTED:
         player_id = game._current_player_id
         card = game._players[player_id].hand[0]
-        await game.handle_cmd(websockets[player_id], "play", card.suit, card.number)
+        await game.handle_cmd(websockets[player_id], "play", str(card))
 
     assert results == [int(x) for x in websockets[0]._get_message("results")[1:]]
