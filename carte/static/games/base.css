@@ -220,4 +220,12 @@
   #results-rematch {
     margin: 0 1em 1em;
   }
+  #game-area:not([data-player-id]) ~ & {
+    #results-table tr:last-child {
+      border-bottom-width: 0;
+    }
+    #results-rematch {
+      display: none;
+    }
+  }
 }

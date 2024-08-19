@@ -231,6 +231,13 @@ class BaseGame:
                     err = "You're not a player"
                     raise CmdError(err) from e
                 args.append(self._players[idx])
+            elif type_ == Player | None:
+                try:
+                    idx = self._players.index(Player(ws.cookies["session_id"].value))
+                except ValueError:
+                    args.append(None)
+                else:
+                    args.append(self._players[idx])
             elif type_ is Card:
                 card = next(raw_args)
                 try:
@@ -259,7 +266,7 @@ class BaseGame:
 
     @cmd()
     async def cmd_current_state(
-        self, ws: web.WebSocketResponse, player: Player
+        self, ws: web.WebSocketResponse, player: Player | None
     ) -> None:
         await self._send_current_state(ws, player)
 

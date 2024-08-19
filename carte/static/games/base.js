@@ -113,11 +113,15 @@ class BaseGame {
 
     this.gameArea.addEventListener("click", this.onGameAreaClick.bind(this));
     document.getElementById("results-rematch").addEventListener("click", (event) => {
-      event.target.classList.add("loading");
-      this.send("rematch");
+      if (this.playerId !== -1) {
+        event.target.classList.add("loading");
+        this.send("rematch");
+      }
     });
     document.getElementById("username").addEventListener("change", (event) => {
-      this.send("name", event.target.value);
+      if (this.playerId !== -1) {
+        this.send("name", event.target.value);
+      }
     });
 
     this.connect();
@@ -349,6 +353,7 @@ class BaseGame {
 
   cmdPlayerId(playerId) {
     this.playerId = Number.parseInt(playerId);
+    this.gameArea.dataset.playerId = playerId;
   }
 
   cmdPlayers(...players) {
