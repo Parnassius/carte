@@ -25,14 +25,16 @@ def cmd(
 
 class BaseGame:
     GAMES: ClassVar[dict[str, type[BaseGame]]] = {}
+    WAITING_GAMES_IDS: ClassVar[dict[type[BaseGame], str]] = {}
 
     version: int
     game_name: str
     number_of_players: int
     hand_size: int
 
-    def __init__(self) -> None:
+    def __init__(self, game_id: str) -> None:
         self.websockets: WeakSet[web.WebSocketResponse] = WeakSet()
+        self._game_id = game_id
         self._recv_lock = asyncio.Lock()
         self._send_lock = asyncio.Lock()
         self._players: list[Player] = []
@@ -76,6 +78,24 @@ class BaseGame:
         ]
         random.shuffle(cards)
         return cards
+
+    def add_player(self, session_id: str) -> Player | None:
+        player = Player(session_id)
+        try:
+            idx = self._players.index(player)
+        except ValueError:
+            if len(self._players) >= self.number_of_players:
+                return None
+            self._players.append(player)
+            if (
+                len(self._players) >= self.number_of_players
+                and self.WAITING_GAMES_IDS[type(self)] == self._game_id
+            ):
+                del self.WAITING_GAMES_IDS[type(self)]
+        else:
+            player = self._players[idx]
+
+        return player
 
     @property
     def current_player(self) -> Player:
@@ -140,6 +160,8 @@ class BaseGame:
     async def _send_current_state(
         self, ws: web.WebSocketResponse, player: Player | None = None
     ) -> None:
+        await self._send(ws, "game_id", self._game_id)
+
         await self._send(ws, "players", *(x.name for x in self._players))
         if player and self._game_status is not GameStatus.NOT_STARTED:
             await self._send(ws, "player_id", self._players.index(player))
@@ -187,7 +209,7 @@ class BaseGame:
             tg.create_task(self._send_others(player, "draw_card", player_id))
 
     async def handle_raw_cmd(
-        self, ws: web.WebSocketResponse, msg: aiohttp.WSMessage
+        self, ws: web.WebSocketResponse, player: Player | None, msg: aiohttp.WSMessage
     ) -> None:
         if msg.type != aiohttp.WSMsgType.TEXT:
             err = (
@@ -197,10 +219,14 @@ class BaseGame:
             raise CmdError(err)
 
         cmd, *args = msg.data.split("|")
-        await self.handle_cmd(ws, cmd, *args)
+        await self.handle_cmd(ws, player, cmd, *args)
 
     async def handle_cmd(
-        self, ws: web.WebSocketResponse, raw_cmd: str, *raw_args_tuple: str
+        self,
+        ws: web.WebSocketResponse,
+        player: Player | None,
+        raw_cmd: str,
+        *raw_args_tuple: str,
     ) -> None:
         try:
             cmd = getattr(self, f"cmd_{raw_cmd}")
@@ -225,19 +251,12 @@ class BaseGame:
             if type_ is web.WebSocketResponse:
                 args.append(ws)
             elif type_ is Player:
-                try:
-                    idx = self._players.index(Player(ws.cookies["session_id"].value))
-                except ValueError as e:
+                if player is None:
                     err = "You're not a player"
-                    raise CmdError(err) from e
-                args.append(self._players[idx])
+                    raise CmdError(err)
+                args.append(player)
             elif type_ == Player | None:
-                try:
-                    idx = self._players.index(Player(ws.cookies["session_id"].value))
-                except ValueError:
-                    args.append(None)
-                else:
-                    args.append(self._players[idx])
+                args.append(player)
             elif type_ is Card:
                 card = next(raw_args)
                 try:
@@ -271,26 +290,21 @@ class BaseGame:
         await self._send_current_state(ws, player)
 
     @cmd()
-    async def cmd_join(self, ws: web.WebSocketResponse, name: str) -> None:
-        player = Player(ws.cookies["session_id"].value, name)
-        try:
-            idx = self._players.index(player)
-        except ValueError:
-            if len(self._players) >= self.number_of_players:
-                await self._send_current_state(ws)
-                return
-            self._players.append(player)
-            await self._send_others(ws, "players", *(x.name for x in self._players))
-        else:
-            player = self._players[idx]
-            player.name = name
+    async def cmd_join(
+        self, ws: web.WebSocketResponse, player: Player | None, name: str
+    ) -> None:
+        if player is None:
+            await self._send_current_state(ws)
+            return
 
+        player.name = name
         player.websockets.add(ws)
         await self._send_current_state(ws, player)
 
         if (
             len(self._players) == self.number_of_players
             and self._game_status is GameStatus.NOT_STARTED
+            and all(x.name for x in self._players)
         ):
             random.shuffle(self._players)
             await self._prepare_start()

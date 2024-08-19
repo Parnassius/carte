@@ -46,10 +46,24 @@ async def game(request: web.Request) -> Mapping[str, Any]:
     return {"game": game_type}
 
 
+@routes.get("/ws/{game_type}")
 @routes.get("/ws/{game_type}/{game_id}")
 async def websocket(request: web.Request) -> web.WebSocketResponse:
+    try:
+        session_id = request.cookies["session_id"]
+    except KeyError:
+        session_id = secrets.token_hex()
+
     game_type = request.match_info["game_type"]
-    game_id = request.match_info["game_id"]
+    try:
+        game_id = request.match_info["game_id"]
+    except KeyError:
+        try:
+            game_id = BaseGame.WAITING_GAMES_IDS[BaseGame.GAMES[game_type]]
+        except KeyError:
+            game_id = secrets.token_hex()
+            BaseGame.WAITING_GAMES_IDS[BaseGame.GAMES[game_type]] = game_id
+
     game = request.app[app_keys.games].get((game_type, game_id))
     if game is None:
         with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:
@@ -59,38 +73,49 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
                 del shelf[f"{game_type}__{game_id}"]
     if game is None:
         try:
-            game = BaseGame.GAMES[game_type]()
+            game = BaseGame.GAMES[game_type](game_id)
         except (KeyError, ValueError) as e:
             raise web.HTTPBadRequest from e
     request.app[app_keys.games][game_type, game_id] = game
 
+    player = game.add_player(session_id)
+
     ws = web.WebSocketResponse(heartbeat=15)
-    try:
-        session_id = request.cookies["session_id"]
-    except KeyError:
-        session_id = secrets.token_hex()
     ws.set_cookie("session_id", session_id, max_age=24 * 60 * 60, samesite="lax")
     await ws.prepare(request)
 
+    if player:
+        player.websockets.add(ws)
     game.websockets.add(ws)
     request.app[app_keys.websockets].add(ws)
     try:
         async for msg in ws:
             try:
-                await game.handle_raw_cmd(ws, msg)
+                await game.handle_raw_cmd(ws, player, msg)
             except CmdError as e:
-                await game.handle_cmd(ws, "current_state")
+                await game.handle_cmd(ws, player, "current_state")
                 args = ["error", str(e)]
                 if e.command is not None:
                     args.append(e.command)
                 await ws.send_str("|".join(x.replace("|", "") for x in args))
 
     finally:
-        game.websockets.discard(ws)
-        request.app[app_keys.websockets].discard(ws)
+        if player:
+            player.websockets.discard(ws)
+            if (
+                len(player.websockets) == 0
+                and game._game_status is GameStatus.NOT_STARTED
+            ):
+                game._players.remove(player)
 
-    if len(game.websockets) == 0 and game._game_status != GameStatus.NOT_STARTED:
-        with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:
-            shelf[f"{game_type}__{game_id}"] = SavedGame(game, game.version)
+        game.websockets.discard(ws)
+        if (
+            len(game.websockets) == 0
+            and game._game_status is not GameStatus.NOT_STARTED
+        ):
+            with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:
+                shelf[f"{game_type}__{game_id}"] = SavedGame(game, game.version)
+
+        request.app[app_keys.websockets].discard(ws)
 
     return ws

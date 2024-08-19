@@ -9,8 +9,8 @@ from carte.types import Card, CardNumber, GameStatus, Player
 
 
 class Briscola(BaseGame, version=1, number_of_players=2, hand_size=3):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, game_id: str) -> None:
+        super().__init__(game_id)
 
         self._card_points = {
             CardNumber.DUE: 0,

@@ -32,7 +32,7 @@ Game = tuple[T_BaseGame, list[DummyWebsocketResponse]]
 
 
 def make_game(game_type: type[T_BaseGame]) -> Game[T_BaseGame]:
-    game = game_type()
+    game = game_type("")
     websockets = []
 
     for i in range(game.number_of_players):

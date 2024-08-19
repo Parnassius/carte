@@ -17,23 +17,14 @@ class BaseGame {
     }`);
     document.adoptedStyleSheets.push(sheet);
 
-    if (document.location.hash.startsWith("#")) {
+    const gameId = document.location.hash.substring(1);
+    if (gameId) {
+      document.getElementById("new-game-id").value = gameId;
       this.setup();
     } else {
-      document.getElementById("new-game-start").addEventListener(
-        "click",
-        () => {
-          let gameId = document.getElementById("new-game-id").value.trim();
-          if (!gameId) {
-            const arr = new Uint32Array(4);
-            window.crypto.getRandomValues(arr);
-            gameId = Array.from(arr, (x) => x.toString(16).padStart(8, "0")).join("");
-          }
-          document.location.hash = gameId;
-          this.setup();
-        },
-        { once: true },
-      );
+      document
+        .getElementById("new-game-start")
+        .addEventListener("click", this.setup.bind(this), { once: true });
     }
   }
 
@@ -106,9 +97,9 @@ class BaseGame {
   }
 
   setup() {
-    this.gameId = document.location.hash.substring(1);
+    this.gameId = document.getElementById("new-game-id").value.trim();
+    document.location.hash = this.gameId;
 
-    document.getElementById("new-game-id").value = this.gameId;
     document.getElementById("new-game-start").classList.add("loading");
 
     this.gameArea.addEventListener("click", this.onGameAreaClick.bind(this));
@@ -130,7 +121,11 @@ class BaseGame {
   connect() {
     const url = new URL(document.location.href);
     url.protocol = url.protocol.replace("http", "ws");
-    url.pathname = `/ws${url.pathname}/${this.gameId}`;
+    if (this.gameId) {
+      url.pathname = `/ws${url.pathname}/${this.gameId}`;
+    } else {
+      url.pathname = `/ws${url.pathname}`;
+    }
     url.hash = "";
     this.ws = new WebSocket(url);
     this.ws.addEventListener("open", this.onWsOpen.bind(this));
@@ -349,6 +344,11 @@ class BaseGame {
     });
     document.getElementById("results-rematch").classList.remove("loading");
     document.getElementById("results-table").replaceChildren();
+  }
+
+  cmdGameId(gameId) {
+    this.gameId = gameId;
+    document.location.hash = this.gameId;
   }
 
   cmdPlayerId(playerId) {
