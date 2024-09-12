@@ -8,7 +8,7 @@ import pytest_asyncio
 from aiohttp import web
 
 from carte.games import BaseGame, Briscola
-from carte.types import Player
+from carte.games.base import Player
 
 T_BaseGame = TypeVar("T_BaseGame", bound=BaseGame)
 

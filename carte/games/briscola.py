@@ -4,8 +4,8 @@ from collections.abc import Iterator
 from typing import Any
 
 from carte.exc import CmdError
-from carte.games.base import BaseGame, cmd
-from carte.types import Card, CardNumber, GameStatus, Player
+from carte.games.base import BaseGame, Player, cmd
+from carte.types import Card, CardNumber, GameStatus
 
 
 class Briscola(BaseGame, version=1, number_of_players=2, hand_size=3):

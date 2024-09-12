@@ -11,7 +11,7 @@ import aiohttp
 from aiohttp import web
 
 from carte.exc import CmdError
-from carte.types import Card, CardNumber, CmdFunc, Command, GameStatus, Player, Suit
+from carte.types import Card, CardNumber, CmdFunc, Command, GameStatus, Suit
 
 
 def cmd(
@@ -21,6 +21,38 @@ def cmd(
         return Command(func, game_status, current_player)
 
     return decorator
+
+
+class Player:
+    def __init__(self, token: str, name: str = "") -> None:
+        self._token = token
+        self.name = name
+        self.ready = True
+        self.hand: list[Card] = []
+        self.points: list[Card] = []
+        self.websockets: WeakSet[web.WebSocketResponse] = WeakSet()
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Player):
+            return NotImplemented
+        return type(self) is type(other) and self._token == other._token
+
+    def __hash__(self) -> int:
+        return hash(self._token)
+
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        del state["websockets"]
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        self.websockets = WeakSet()
+
+    def reset(self) -> None:
+        self.ready = False
+        self.hand.clear()
+        self.points.clear()
 
 
 class BaseGame:

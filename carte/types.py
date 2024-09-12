@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
-from dataclasses import InitVar, dataclass, field
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum, StrEnum, auto
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
-from weakref import WeakSet
-
-from aiohttp import web
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 if TYPE_CHECKING:
     from carte.games.base import BaseGame
@@ -46,41 +43,6 @@ class Card:
 
     def __str__(self) -> str:
         return f"{self.suit}:{self.number}"
-
-
-@dataclass
-class Player:
-    token: InitVar[str]
-    name: str = ""
-    ready: bool = True
-    hand: list[Card] = field(default_factory=list, init=False)
-    points: list[Card] = field(default_factory=list, init=False)
-    websockets: WeakSet[web.WebSocketResponse] = field(
-        default_factory=WeakSet, init=False
-    )
-
-    def __post_init__(self, token: str) -> None:
-        self._token = token
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, Player) and self._token == other._token
-
-    def __hash__(self) -> int:
-        return hash(self._token)
-
-    def __getstate__(self) -> dict[str, Any]:
-        state = self.__dict__.copy()
-        del state["websockets"]
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        self.__dict__.update(state)
-        self.websockets = WeakSet()
-
-    def reset(self) -> None:
-        self.ready = False
-        self.hand.clear()
-        self.points.clear()
 
 
 CmdFunc = TypeVar("CmdFunc", bound=Callable[..., Awaitable[None]])
