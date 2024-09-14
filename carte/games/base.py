@@ -3,8 +3,18 @@ from __future__ import annotations
 import asyncio
 import itertools
 import random
+import types
 from collections.abc import Callable, Iterable, Iterator
-from typing import Any, ClassVar, get_type_hints, overload
+from typing import (
+    Any,
+    ClassVar,
+    Generic,
+    TypeVar,
+    get_args,
+    get_origin,
+    get_type_hints,
+    overload,
+)
 from weakref import WeakSet
 
 import aiohttp
@@ -55,10 +65,14 @@ class Player:
         self.points.clear()
 
 
-class BaseGame:
-    GAMES: ClassVar[dict[str, type[BaseGame]]] = {}
-    WAITING_GAMES_IDS: ClassVar[dict[type[BaseGame], str]] = {}
+T_Player = TypeVar("T_Player", bound=Player)
 
+
+class BaseGame(Generic[T_Player]):
+    GAMES: ClassVar[dict[str, type[BaseGame[Any]]]] = {}
+    WAITING_GAMES_IDS: ClassVar[dict[type[BaseGame[Any]], str]] = {}
+
+    player_class: type[T_Player]
     version: int
     game_name: str
     number_of_players: int
@@ -69,7 +83,7 @@ class BaseGame:
         self._game_id = game_id
         self._recv_lock = asyncio.Lock()
         self._send_lock = asyncio.Lock()
-        self._players: list[Player] = []
+        self._players: list[T_Player] = []
         self._deck: list[Card]
         self._starting_player_id = random.randrange(self.number_of_players)
         self._current_player_id: int
@@ -85,6 +99,13 @@ class BaseGame:
         **kwargs: Any,
     ) -> None:
         super().__init_subclass__(**kwargs)
+        cls.player_class = get_args(
+            next(
+                x
+                for x in types.get_original_bases(cls)
+                if issubclass(get_origin(x), BaseGame)
+            )
+        )[0]
         cls.version = version
         cls.game_name = game_name or cls.__name__
         cls.number_of_players = number_of_players
@@ -111,8 +132,8 @@ class BaseGame:
         random.shuffle(cards)
         return cards
 
-    def add_player(self, session_id: str) -> Player | None:
-        player = Player(session_id)
+    def add_player(self, session_id: str) -> T_Player | None:
+        player = self.player_class(session_id)
         try:
             idx = self._players.index(player)
         except ValueError:
@@ -130,10 +151,10 @@ class BaseGame:
         return player
 
     @property
-    def current_player(self) -> Player:
+    def current_player(self) -> T_Player:
         return self._players[self._current_player_id]
 
-    def _board_state(self, ws_player: Player | None) -> Iterator[list[Any]]:
+    def _board_state(self, ws_player: T_Player | None) -> Iterator[list[Any]]:
         raise NotImplementedError
 
     async def _send_str(self, ws: web.WebSocketResponse, msg: str) -> None:
@@ -145,7 +166,7 @@ class BaseGame:
     @overload
     async def _send(
         self,
-        maybe_player_or_ws: Player | web.WebSocketResponse,
+        maybe_player_or_ws: T_Player | web.WebSocketResponse,
         *args: str | int | Card,
     ) -> None: ...
 
@@ -159,7 +180,7 @@ class BaseGame:
 
     async def _send(
         self,
-        maybe_player_or_ws: Player | web.WebSocketResponse | str | int | Card,
+        maybe_player_or_ws: T_Player | web.WebSocketResponse | str | int | Card,
         *args: str | int | Card,
         websockets: Iterable[web.WebSocketResponse] | None = None,
     ) -> None:
@@ -180,7 +201,7 @@ class BaseGame:
                     tg.create_task(self._send_str(ws, msg))
 
     async def _send_others(
-        self, player_or_ws: Player | web.WebSocketResponse, *args: Any
+        self, player_or_ws: T_Player | web.WebSocketResponse, *args: Any
     ) -> None:
         websockets = (
             player_or_ws.websockets
@@ -190,7 +211,7 @@ class BaseGame:
         await self._send(*args, websockets=self.websockets - websockets)
 
     async def _send_current_state(
-        self, ws: web.WebSocketResponse, player: Player | None = None
+        self, ws: web.WebSocketResponse, player: T_Player | None = None
     ) -> None:
         await self._send(ws, "game_id", self._game_id)
 
@@ -232,7 +253,7 @@ class BaseGame:
     async def _start_game(self) -> None:
         raise NotImplementedError
 
-    async def _draw_card(self, player: Player) -> None:
+    async def _draw_card(self, player: T_Player) -> None:
         card = self._deck.pop()
         player.hand.append(card)
         player_id = self._players.index(player)
@@ -241,7 +262,7 @@ class BaseGame:
             tg.create_task(self._send_others(player, "draw_card", player_id))
 
     async def handle_raw_cmd(
-        self, ws: web.WebSocketResponse, player: Player | None, msg: aiohttp.WSMessage
+        self, ws: web.WebSocketResponse, player: T_Player | None, msg: aiohttp.WSMessage
     ) -> None:
         if msg.type != aiohttp.WSMsgType.TEXT:
             err = (
@@ -256,7 +277,7 @@ class BaseGame:
     async def handle_cmd(
         self,
         ws: web.WebSocketResponse,
-        player: Player | None,
+        player: T_Player | None,
         raw_cmd: str,
         *raw_args_tuple: str,
     ) -> None:
@@ -282,12 +303,12 @@ class BaseGame:
         for name, type_ in params.items():
             if type_ is web.WebSocketResponse:
                 args.append(ws)
-            elif type_ is Player:
+            elif type_ in (T_Player, self.player_class):  # type: ignore[misc]
                 if player is None:
                     err = "You're not a player"
                     raise CmdError(err)
                 args.append(player)
-            elif type_ == Player | None:
+            elif type_ in (T_Player | None, self.player_class | None):  # type: ignore[misc]
                 args.append(player)
             elif type_ is Card:
                 card = next(raw_args)
@@ -317,13 +338,13 @@ class BaseGame:
 
     @cmd()
     async def cmd_current_state(
-        self, ws: web.WebSocketResponse, player: Player | None
+        self, ws: web.WebSocketResponse, player: T_Player | None
     ) -> None:
         await self._send_current_state(ws, player)
 
     @cmd()
     async def cmd_join(
-        self, ws: web.WebSocketResponse, player: Player | None, name: str
+        self, ws: web.WebSocketResponse, player: T_Player | None, name: str
     ) -> None:
         if player is None:
             await self._send_current_state(ws)
@@ -342,12 +363,12 @@ class BaseGame:
             await self._prepare_start()
 
     @cmd()
-    async def cmd_name(self, player: Player, name: str) -> None:
+    async def cmd_name(self, player: T_Player, name: str) -> None:
         player.name = name
         await self._send("players", *(x.name for x in self._players))
 
     @cmd(game_status=GameStatus.ENDED)
-    async def cmd_rematch(self, player: Player) -> None:
+    async def cmd_rematch(self, player: T_Player) -> None:
         player.ready = True
         if all(x.ready for x in self._players):
             await self._prepare_start()

@@ -10,7 +10,7 @@ from aiohttp import web
 from carte.games import BaseGame, Briscola
 from carte.games.base import Player
 
-T_BaseGame = TypeVar("T_BaseGame", bound=BaseGame)
+T_BaseGame = TypeVar("T_BaseGame", bound=BaseGame[Player])
 
 
 class DummyWebsocketResponse(web.WebSocketResponse):
@@ -36,7 +36,7 @@ def make_game(game_type: type[T_BaseGame]) -> Game[T_BaseGame]:
     websockets = []
 
     for i in range(game.number_of_players):
-        player = Player(f"player{i}", f"Player {i}")
+        player = game_type.player_class(f"player{i}", f"Player {i}")
         ws = DummyWebsocketResponse()
         websockets.append(ws)
         game.websockets.add(ws)

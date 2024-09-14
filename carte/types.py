@@ -7,7 +7,7 @@ from enum import Enum, StrEnum, auto
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 if TYPE_CHECKING:
-    from carte.games.base import BaseGame
+    from carte.games.base import BaseGame, Player
 
 
 class GameStatus(Enum):
@@ -57,7 +57,7 @@ class Command(Generic[CmdFunc]):  # type: ignore[misc]
 
 @dataclass
 class SavedGame:
-    game: BaseGame
+    game: BaseGame[Player]
     version: int
     last_saved: datetime = field(default_factory=lambda: datetime.now(UTC), init=False)
 
