@@ -205,6 +205,9 @@
     border-collapse: collapse;
     line-height: 2.5em;
     tr {
+      &.me {
+        font-weight: bold;
+      }
       border-bottom: 1px solid var(--background-secondary-highlight-strong);
       td {
         padding: 0 0.5em;
