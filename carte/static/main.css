@@ -12,7 +12,7 @@
   --highlight-low-contrast: light-dark(#adf, #249);
   --highlight-high-contrast: light-dark(#07c, #8ae);
 
-  --menu-width: min(20rem, calc(100vw - 5rem));
+  --menu-width: min(20rem, calc(100dvw - 5rem));
 
   font-size: 16px;
   font-family: system-ui;
@@ -106,7 +106,7 @@ button {
   margin: 0;
   padding: 5em 0;
   list-style: none;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -174,7 +174,7 @@ header {
 }
 #menu {
   inset: 0 0 auto auto;
-  height: 100vh;
+  height: 100dvh;
   width: var(--menu-width);
   border-width: 0;
   padding: 1rem;

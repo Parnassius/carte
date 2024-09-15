@@ -34,12 +34,12 @@
     --deck-shadow-color: #777;
 
     --left: var(--gap);
-    --center-x: calc(50vw - var(--card-width) / 2);
-    --right: calc(100vw - var(--card-width) - var(--gap));
+    --center-x: calc(50dvw - var(--card-width) / 2);
+    --right: calc(100dvw - var(--card-width) - var(--gap));
 
     --top: var(--gap);
-    --center-y: calc(50vh - var(--card-height) / 2);
-    --bottom: calc(100vh - var(--card-height) - var(--gap));
+    --center-y: calc(50dvh - var(--card-height) / 2);
+    --bottom: calc(100dvh - var(--card-height) - var(--gap));
 
     --rotation-diff: calc((var(--card-height) - var(--card-width)) / 2);
 
@@ -150,7 +150,7 @@
   margin: 0;
   padding: 5rem 1rem;
   list-style: none;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   gap: 1rem;
   flex-direction: column;

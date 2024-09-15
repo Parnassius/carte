@@ -6,7 +6,7 @@
   div {
     --unit: min(
       calc(
-        100vw /
+        100dvw /
         (
           var(--card-height-raw) +
           var(--card-width-raw) *
@@ -17,7 +17,7 @@
         )
       ),
       calc(
-        100vh /
+        100dvh /
         (
           var(--card-height-raw) *
           4 +
@@ -31,7 +31,7 @@
 
     @media (orientation: portrait) {
       --center-x: calc(
-        50vw +
+        50dvw +
         (var(--left) + var(--card-height) - var(--card-width)) /
         2
       );
