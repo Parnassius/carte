@@ -1,14 +1,238 @@
+class CardGroup {
+  constructor(name, subFields, game) {
+    this.name = name;
+    this.game = game;
+    this.subFields = subFields;
+
+    this.params = new Map();
+  }
+
+  // creates a clone
+  clone() {
+    throw new Error();
+  }
+
+  // receive a card from another CardCroup (called by moveTo(...))
+  receiveCard(/* card, params */) {
+    throw new Error();
+  }
+
+  // sets a single key-value pair for this.params
+  select(key, value) {
+    return this.setParams(new Map([[key, value]]));
+  }
+  // sets multiple key-value pairs for this.params
+  setParams(subFieldMap) {
+    const copy = this.clone();
+    for (const field of copy.subFields) {
+      copy.params.set(field, subFieldMap.get(field));
+    }
+    return copy;
+  }
+
+  getSelector() {
+    const sel = this.subFields
+      .map((field) => `[data-${field}='${this.params.get(field)}']`)
+      .join("");
+    return `.card[data-position='${this.name}']${sel}`;
+  }
+
+  clearPrefixTags(card, prefix) {
+    for (const field of Object.keys(card.dataset)) {
+      const chr = field.charAt(prefix.length);
+      if (field.startsWith(prefix) && "A" <= chr && chr <= "Z") {
+        delete card.dataset[field];
+      }
+    }
+  }
+}
+
+class Deck extends CardGroup {
+  clone() {
+    return new Deck(this.name, this.subFields, this.game);
+  }
+
+  moveTo(dest, newParams) {
+    const deckParams = new Map(
+      this.subFields.map((field) => [
+        `starting${this.game.capitalizeFirst(field)}`,
+        this.params.get(field),
+      ]),
+    );
+    deckParams.set("startingPosition", this.name);
+
+    // create the card
+    const card = document.createElement("div");
+    card.classList.add("card");
+    this.game.addCardParams(card, deckParams);
+
+    this.game.gameArea.append(card);
+
+    // reduce the count
+    this.changeCount(-1);
+
+    const recFunc = dest.receiveCard(card, newParams);
+
+    return () => {
+      if (recFunc !== undefined) {
+        recFunc();
+      }
+
+      this.clearPrefixTags(card, "starting");
+    };
+  }
+
+  receiveCard(card, params) {
+    const cardParams = new Map(params);
+    cardParams.set("position", this.name);
+    for (const field of this.subFields) {
+      cardParams.set(field, this.params.get(field));
+    }
+    this.game.addCardParams(card, cardParams);
+
+    return () => {
+      card.remove();
+      this.changeCount(1);
+    };
+  }
+
+  // creates the div.card for the deck and appends it to the game area
+  instantiate(params) {
+    const deck = document.createElement("div");
+    deck.classList.add("card");
+
+    const deckParams = new Map(params);
+    deckParams.set("position", this.name);
+    for (const field of this.subFields) {
+      deckParams.set(field, this.params.get(field));
+    }
+
+    this.game.addCardParams(deck, deckParams);
+
+    this.game.gameArea.append(deck);
+  }
+
+  changeCount(delta) {
+    const deck = this.game.gameArea.querySelector(this.getSelector());
+    const count = Number.parseInt(deck.dataset.deckCount);
+
+    deck.dataset.deckCount = count + delta;
+  }
+
+  setCount(value) {
+    const deck = this.game.gameArea.querySelector(this.getSelector());
+    deck.dataset.deckCount = value;
+  }
+}
+
+class CardField extends CardGroup {
+  constructor(name, subFields, maxSize, game) {
+    super(name, subFields, game);
+    this.maxSize = maxSize;
+
+    this.fieldParameters = ["position", "fieldPosition", "fieldSize"];
+  }
+
+  clone() {
+    return new CardField(this.name, this.subFields, this.maxSize, this.game);
+  }
+
+  // NOTE: if count is undefined, getCards(...) returns the entire array.
+  moveTo(cardParams, dest, newParams, count = undefined) {
+    const cards = this.getCards(cardParams, count);
+
+    for (const card of cards) {
+      // remove the card from this
+      for (const field of this.subFields) {
+        delete card.dataset[field];
+      }
+      delete card.dataset.position;
+      this.clearPrefixTags(card, "field");
+    }
+
+    this.refreshField();
+
+    const funcs = cards.map((card) => dest.receiveCard(card, newParams));
+    // add the card to the other thing
+    return () => {
+      for (const func of funcs) {
+        if (func !== undefined) {
+          func();
+        }
+      }
+    };
+  }
+
+  receiveCard(card, cardParams) {
+    card.dataset.position = this.name;
+    this.game.addCardParams(card, new Map([...cardParams, ...this.params]));
+
+    this.refreshField();
+  }
+
+  // NOTE: if count is undefined, Array.prototype.slice(0) returns the entire array.
+  getCards(params, count = undefined) {
+    const cardSel = Array.from(params)
+      .map(([k, v]) => `[data-${k}='${v}']`)
+      .join("");
+    return Array.from(
+      this.game.gameArea.querySelectorAll(this.getSelector() + cardSel),
+    ).slice(0, count);
+  }
+
+  refreshField() {
+    const otherCards = Array.from(
+      this.game.gameArea.querySelectorAll(this.getSelector()),
+    );
+    // sort: keep the data-field-position order, with the undefined ones at the end (in appearance order)
+    otherCards.sort((c1, c2) => {
+      if (!("fieldPosition" in c1.dataset)) {
+        if (!("fieldPosition" in c2.dataset)) {
+          return 0; // both undefined: keep the previous order
+        }
+        return 1; // c2 before c1
+      }
+      if (!("fieldPosition" in c2.dataset)) {
+        return -1; // c1 before c2
+      }
+
+      return (
+        Number.parseInt(c1.dataset.fieldPosition) -
+        Number.parseInt(c2.dataset.fieldPosition)
+      );
+    });
+
+    for (const [i, oc] of otherCards.entries()) {
+      oc.dataset.fieldPosition = i;
+      oc.dataset.fieldSize = otherCards.length;
+    }
+  }
+}
+
 class BaseGame {
   constructor() {
     this.pendingHandler = Promise.resolve();
     this.gameArea = document.getElementById("game-area");
     this.toasts = document.getElementById("toasts");
-    this.positionAttributes = ["position", "player", "rotated"];
-    this.cardAttributes = ["suit", "number", "back"];
     this.gameStarted = false;
     this.playerId = -1;
     this.players = [];
-    this.decks = new Map();
+    this.decks = new Map(
+      this.deckGenerators.map(([name, ...args]) => [
+        name,
+        new Deck(name, ...args, this),
+      ]),
+    );
+    this.cardFields = new Map(
+      this.cardFieldGenerators.map(([name, ...args]) => [
+        name,
+        new CardField(name, ...args, this),
+      ]),
+    );
+
+    this.transitionDuration = 500; // [ms]
+    this.transitionPromiseResolve = undefined;
+    this.transitionEvents = new Map();
 
     const sheet = new CSSStyleSheet();
     const baseSelector = `#game-area[data-game='${this.gameArea.dataset.game}'] .card`;
@@ -21,10 +245,16 @@ class BaseGame {
     if (gameId) {
       document.getElementById("new-game-id").value = gameId;
       this.setup();
+      this.connect();
     } else {
-      document
-        .getElementById("new-game-start")
-        .addEventListener("click", this.setup.bind(this), { once: true });
+      document.getElementById("new-game-start").addEventListener(
+        "click",
+        () => {
+          this.setup();
+          this.connect();
+        },
+        { once: true },
+      );
     }
   }
 
@@ -33,6 +263,18 @@ class BaseGame {
   }
 
   get handSize() {
+    throw new Error();
+  }
+
+  get cardFieldGenerators() {
+    throw new Error();
+  }
+
+  get deckGenerators() {
+    throw new Error();
+  }
+
+  getPlayerIdentifier(/* playerId */) {
     throw new Error();
   }
 
@@ -50,15 +292,14 @@ class BaseGame {
       ),
     );
 
-    for (let i = 1; i <= this.handSize; i++) {
-      for (let j = 1; j <= this.handSize; j++) {
-        const nthChildSelectors = this.playerIdentifiers.map(
-          (player) =>
-            `:nth-child(${i} of [data-position='hand'][data-player='${player}'])` +
-            `:nth-last-child(${j} of [data-position='hand'][data-player='${player}'])`,
-        );
-        rules.push(`&[data-position='hand']:is(${nthChildSelectors.join(", ")}) {
-          --card-hand-position: ${(i - j) / 2};
+    const cardFieldSize = Math.max(
+      ...Array.from(this.cardFields).map(([_, cf]) => cf.maxSize),
+    );
+    for (let tot = 1; tot <= cardFieldSize; tot++) {
+      for (let pos = 0; pos < tot; pos++) {
+        rules.push(`&[data-field-position='${pos}'][data-field-size='${tot}'] {
+          --card-field-position: ${pos};
+          --card-field-size: ${tot};
         }`);
       }
     }
@@ -103,6 +344,10 @@ class BaseGame {
     document.getElementById("new-game-start").classList.add("loading");
 
     this.gameArea.addEventListener("click", this.onGameAreaClick.bind(this));
+
+    this.gameArea.addEventListener("transitionrun", this.onTransitionRun.bind(this));
+    this.gameArea.addEventListener("transitionend", this.onTransitionEnd.bind(this));
+
     document.getElementById("results-rematch").addEventListener("click", (event) => {
       if (this.playerId !== -1) {
         event.target.classList.add("loading");
@@ -114,8 +359,6 @@ class BaseGame {
         this.send("name", event.target.value);
       }
     });
-
-    this.connect();
   }
 
   connect() {
@@ -166,6 +409,33 @@ class BaseGame {
     this.ws.close();
   }
 
+  onTransitionRun(event) {
+    if (!event.target.matches(".card")) {
+      return;
+    }
+
+    if (!this.transitionEvents.has(event.target)) {
+      this.transitionEvents.set(event.target, new Set());
+    }
+    this.transitionEvents.get(event.target).add(event.propertyName);
+  }
+  onTransitionEnd(event) {
+    if (!event.target.matches(".card")) {
+      return;
+    }
+
+    this.transitionEvents.get(event.target).delete(event.propertyName);
+    if (this.transitionEvents.get(event.target).size === 0) {
+      this.transitionEvents.delete(event.target);
+    }
+    if (
+      this.transitionEvents.size === 0 &&
+      this.transitionPromiseResolve !== undefined
+    ) {
+      this.transitionPromiseResolve();
+    }
+  }
+
   onGameAreaClick() {
     throw new Error();
   }
@@ -174,10 +444,6 @@ class BaseGame {
     const msg = args.map((x) => x.replaceAll("|", "")).join("|");
     console.info(`>> ${msg}`);
     this.ws.send(msg);
-  }
-
-  async sleep(ms) {
-    return new Promise((resolve) => window.setTimeout(resolve, ms));
   }
 
   async awaitTransition(element, func) {
@@ -214,6 +480,41 @@ class BaseGame {
     }
     func();
     await Promise.all(promises);
+  }
+
+  async awaitCardTransitions(afterFunc = undefined) {
+    if ("noAnimations" in this.gameArea.dataset) {
+      if (afterFunc !== undefined) {
+        afterFunc();
+      }
+      return;
+    }
+
+    if (window.matchMedia("(prefers-reduced-motion)").matches) {
+      await this.sleep(this.transitionDuration / 2);
+      if (afterFunc !== undefined) {
+        afterFunc();
+      }
+      return;
+    }
+
+    const obj = Promise.withResolvers();
+    this.transitionPromiseResolve = obj.resolve;
+
+    // fallback: twice the duration of the transition
+    window.setTimeout(obj.resolve, 2 * this.transitionDuration);
+
+    await obj.promise;
+    this.transitionPromiseResolve = undefined;
+    this.transitionEvents = new Map();
+
+    if (afterFunc !== undefined) {
+      afterFunc();
+    }
+  }
+
+  async sleep(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
   }
 
   createToast(message, params) {
@@ -260,68 +561,33 @@ class BaseGame {
 
   addCardParams(card, params) {
     for (const [key, value] of params.entries()) {
-      card.dataset[key] = value;
+      if (value === null) {
+        delete card.dataset[key];
+      } else {
+        card.dataset[key] = value;
+      }
     }
   }
 
-  async createCard(params) {
+  toggleCardParam(card, param) {
+    if (param in card.dataset) {
+      delete card.dataset[param];
+    } else {
+      card.dataset[param] = "";
+    }
+  }
+
+  createCard(params) {
     const card = document.createElement("div");
     card.classList.add("card");
     this.addCardParams(card, params);
-    await this.awaitTransition(card, () => {
-      this.gameArea.appendChild(card);
-    });
+    this.gameArea.appendChild(card);
     return card;
-  }
-
-  async moveCardFromDeck(params, deckId = "deck") {
-    const deck = this.decks.get(deckId);
-    deck.dataset.deckCount--;
-    await this.createCard(params);
-  }
-
-  async moveCardToDeck(card, deckId = "deck") {
-    await this.awaitTransition(card, () => {
-      for (const key of Object.keys(card.dataset)) {
-        if (!this.cardAttributes.includes(key)) {
-          delete card.dataset[key];
-        }
-      }
-      const deck = this.decks.get(deckId);
-      for (const key of this.positionAttributes) {
-        if (key in deck.dataset) {
-          card.dataset[key] = deck.dataset[key];
-        }
-      }
-      deck.dataset.deckCount++;
-    });
-    card.remove();
-  }
-
-  async moveCardFromHand(params) {
-    const partialSelector = `.card[data-position='hand'][data-player='${params.get("player")}']`;
-    const frontSelector = `${partialSelector}[data-suit='${params.get("suit")}'][data-number='${params.get("number")}']`;
-    const backSelector = `${partialSelector}[data-back]`;
-    const card =
-      this.gameArea.querySelector(frontSelector) ??
-      this.gameArea.querySelector(backSelector);
-    await this.awaitTransition(card, () => {
-      const otherCards = document.querySelectorAll(
-        `.card[data-position='${params.get("position")}']`,
-      );
-      const zIndex = Math.max(
-        0,
-        ...Array.from(otherCards, (card) => Number(card.style.zIndex)),
-      );
-      card.style.zIndex = zIndex + 1;
-      delete card.dataset.back;
-      this.addCardParams(card, params);
-    });
   }
 
   async handleCmd(cmd, ...args) {
     await this.pendingHandler;
-    const camelCmd = cmd.replaceAll(/((?:^|_)[a-z])/g, (m) => m.at(-1).toUpperCase());
+    const camelCmd = this.separatorToCamel(cmd, "_", true);
     const func = this[`cmd${camelCmd}`];
     if (func) {
       await func.bind(this)(...args);
@@ -373,7 +639,7 @@ class BaseGame {
   }
 
   cmdDeckCount(deckId, amount) {
-    this.decks.get(deckId).dataset.deckCount = amount;
+    this.decks.get(deckId).setCount(amount);
   }
 
   cmdTurn() {
@@ -381,30 +647,46 @@ class BaseGame {
   }
 
   async cmdDrawCard(playerId, card = null) {
-    const params = new Map([
-      ["position", "hand"],
-      ["player", this.getPlayerIdentifier(playerId)],
-    ]);
+    const player = this.getPlayerIdentifier(playerId);
+    const params = new Map();
     if (card !== null) {
       const [suit, number] = card.split(":");
       params.set("suit", suit);
       params.set("number", number);
-    } else {
-      params.set("back", "");
     }
-    await this.moveCardFromDeck(params);
+
+    const deck = this.decks.get("deck");
+    const func = deck.moveTo(
+      this.cardFields.get("hand").select("player", player),
+      params,
+    );
+
+    await this.awaitCardTransitions(func);
   }
 
   async cmdPlayCard(playerId, card) {
     const [suit, number] = card.split(":");
-    await this.moveCardFromHand(
-      new Map([
-        ["position", "playing-area"],
-        ["player", this.getPlayerIdentifier(playerId)],
-        ["suit", suit],
-        ["number", number],
-      ]),
+    const player = this.getPlayerIdentifier(playerId);
+
+    const selectParams = new Map();
+    const newParams = new Map();
+    if (this.playerId === Number.parseInt(playerId)) {
+      selectParams.set("suit", suit);
+      selectParams.set("number", number);
+    } else {
+      newParams.set("suit", suit);
+      newParams.set("number", number);
+    }
+    newParams.set("fieldPlayer", player);
+
+    const cardField = this.cardFields.get("hand").select("player", player);
+    const func = cardField.moveTo(
+      selectParams,
+      this.cardFields.get("playing-area"),
+      newParams,
+      1,
     );
+    await this.awaitCardTransitions(func);
   }
 
   cmdResults(...results) {
@@ -412,7 +694,7 @@ class BaseGame {
     const sortedResults = Array.from(results.entries()).sort(([, a], [, b]) => b - a);
     for (const [playerId, points] of sortedResults) {
       const row = table.insertRow();
-      if (playerId === this.playerId) {
+      if (this.playerId === Number.parseInt(playerId)) {
         row.classList.add("me");
       }
       const playerCell = row.insertCell();
@@ -421,6 +703,19 @@ class BaseGame {
       pointsCell.textContent = points;
     }
     document.getElementById("results").showPopover();
+  }
+
+  camelToSeparator(str, separator = "_") {
+    return str.replaceAll(/[A-Z]/g, (m) => `${separator}${m.toLowerCase()}`);
+  }
+  separatorToCamel(str, separator = "_", capitalized = false) {
+    const startSel = capitalized ? "^|" : "";
+    const regex = new RegExp(`((?:${startSel}${separator})[a-z])`, "g");
+    return str.replaceAll(regex, (m) => m.at(-1).toUpperCase());
+  }
+
+  capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 }
 

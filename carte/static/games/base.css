@@ -46,6 +46,8 @@
     --card-bg-x: -1;
     --card-bg-y: -1;
 
+    --card-rotation: 0;
+
     &.card {
       width: var(--card-width);
       height: var(--card-height);
@@ -58,9 +60,12 @@
       transition-property: top, left, rotate;
       transition-duration: 0.5s;
 
+      rotate: calc(var(--card-rotation) * 90deg);
+
       @starting-style {
         top: var(--card-starting-y) !important;
         left: var(--card-starting-x) !important;
+        rotate: calc(var(--card-starting-rotation) * 90deg) !important;
       }
 
       &::after {
@@ -74,24 +79,13 @@
           var(--highlight-high-contrast);
       }
 
-      &[data-back] {
+      &:not([data-suit][data-number]) {
         background-image: var(--card-image-back);
         background-size: 100% 100%;
       }
 
-      &[data-rotated] {
-        --card-rotation-angle: 90deg;
-        rotate: var(--card-rotation-angle);
-        &[data-deck-count]::before {
-          rotate: calc(var(--card-rotation-angle) + 90deg);
-          writing-mode: vertical-rl;
-        }
-        &[data-rotated="back"] {
-          --card-rotation-angle: -90deg;
-        }
-      }
-
       &[data-deck] {
+        --deck-writing-mode: initial;
         &[data-deck-count="0"] {
           visibility: hidden;
         }
@@ -102,6 +96,9 @@
           align-items: center;
           justify-content: center;
           &::before {
+            rotate: calc(var(--card-rotation) * (90deg + 90deg * var(--card-rotation)));
+            writing-mode: var(--deck-writing-mode);
+
             content: attr(data-deck-count);
             position: absolute;
             inset: 0;
