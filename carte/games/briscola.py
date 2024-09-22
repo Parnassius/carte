@@ -30,8 +30,6 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
         self._played_cards: dict[Player, Card] = {}
 
     def _board_state(self, ws_player: Player | None) -> Iterator[list[Any]]:
-        if not self._briscola_drawn:
-            yield ["show_briscola", self._briscola]
 
         for player_id, player in enumerate(self._players):
             for card in player.hand:
@@ -40,9 +38,15 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
                 else:
                     yield ["draw_card", player_id]
 
+        if not self._briscola_drawn:
+            yield ["show_briscola", self._briscola]
+
         for player, card in self._played_cards.items():
             player_id = self._players.index(player)
-            yield ["draw_card", player_id, card]
+            if player == ws_player:
+                yield ["draw_card", player_id, card]
+            else:
+                yield ["draw_card", player_id]
             yield ["play_card", player_id, card]
 
         for player_id, player in enumerate(self._players):
@@ -127,8 +131,6 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
                 return
 
         else:
-            self._current_player_id = (
-                self._current_player_id + 1
-            ) % self.number_of_players
+            self._next_player()
 
         await self._send(self.current_player, "turn")

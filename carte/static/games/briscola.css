@@ -37,18 +37,24 @@
       );
     }
 
-    --card-starting-y: var(--center-y);
-    --card-starting-x: var(--left);
-
     &.card {
       &[data-position="deck"] {
         top: calc(var(--center-y) - var(--deck-shadow-width) / 2);
         left: var(--left);
       }
+      &[data-starting-position="deck"] {
+        --card-starting-x: var(--left);
+        --card-starting-y: calc(var(--center-y) - var(--deck-shadow-width) / 2);
+        --card-starting-rotation: 0;
+        &[data-position="briscola"] {
+          --card-starting-rotation: 1;
+        }
+      }
 
       &[data-position="briscola"] {
         top: var(--center-y);
         left: calc(var(--left) + var(--card-width) / 2);
+        --card-rotation: 1;
         z-index: -1;
       }
 
@@ -65,10 +71,11 @@
           var(--card-width) /
           4
         );
-        &[data-player="opponent"] {
+        z-index: var(--card-field-position);
+        &[data-field-player="opponent"] {
           --card-playing-area-offsets-sign: -1;
         }
-        &[data-player="self"] {
+        &[data-field-player="self"] {
           --card-playing-area-offsets-sign: 1;
         }
       }
@@ -76,7 +83,7 @@
       &[data-position="hand"] {
         left: calc(
           var(--center-x) +
-          var(--card-hand-position) *
+          (var(--card-field-position) - (var(--card-field-size) - 1) / 2) *
           (var(--gap) + var(--card-width))
         );
         &[data-player="opponent"] {
@@ -88,6 +95,8 @@
       }
 
       &[data-position="points"] {
+        --card-rotation: 1;
+        --deck-writing-mode: vertical-rl;
         left: calc(var(--left) + var(--rotation-diff));
         &[data-player="opponent"] {
           top: calc(var(--top) - var(--rotation-diff));

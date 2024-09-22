@@ -261,6 +261,9 @@ class BaseGame(Generic[T_Player]):
             tg.create_task(self._send(player, "draw_card", player_id, card))
             tg.create_task(self._send_others(player, "draw_card", player_id))
 
+    def _next_player(self) -> None:
+        self._current_player_id = (self._current_player_id + 1) % self.number_of_players
+
     async def handle_raw_cmd(
         self, ws: web.WebSocketResponse, player: T_Player | None, msg: aiohttp.WSMessage
     ) -> None:
