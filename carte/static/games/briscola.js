@@ -81,7 +81,7 @@ class Briscola extends BaseGame {
     const player = this.getPlayerIdentifier(playerId);
 
     const params = new Map();
-    if (this.playerId !== Number.parseInt(playerId)) {
+    if (!this.isPlayerSelf(playerId)) {
       params.set("suit", null);
       params.set("number", null);
     }

@@ -59,7 +59,6 @@
       position: absolute;
       transition-property: top, left, rotate;
       transition-duration: 0.5s;
-
       rotate: calc(var(--card-rotation) * 90deg);
 
       @starting-style {
@@ -98,7 +97,6 @@
           &::before {
             rotate: calc(var(--card-rotation) * (90deg + 90deg * var(--card-rotation)));
             writing-mode: var(--deck-writing-mode);
-
             content: attr(data-deck-count);
             position: absolute;
             inset: 0;
@@ -202,7 +200,7 @@
     border-collapse: collapse;
     line-height: 2.5em;
     tr {
-      &.me {
+      &.self {
         font-weight: bold;
       }
       border-bottom: 1px solid var(--background-secondary-highlight-strong);

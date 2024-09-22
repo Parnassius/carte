@@ -44,7 +44,7 @@
       }
       &[data-starting-position="deck"] {
         --card-starting-x: var(--left);
-        --card-starting-y: calc(var(--center-y));
+        --card-starting-y: calc(var(--center-y) - var(--deck-shadow-width) / 2);
         --card-starting-rotation: 0;
         &[data-position="briscola"] {
           --card-starting-rotation: 1;
@@ -72,7 +72,6 @@
           4
         );
         z-index: var(--card-field-position);
-
         &[data-field-player="opponent"] {
           --card-playing-area-offsets-sign: -1;
         }

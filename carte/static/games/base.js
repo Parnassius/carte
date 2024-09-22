@@ -1,13 +1,12 @@
 class CardGroup {
-  constructor(name, subFields, game) {
-    this.name = name;
+  constructor(game, name, subFields) {
     this.game = game;
+    this.name = name;
     this.subFields = subFields;
 
     this.params = new Map();
   }
 
-  // creates a clone
   clone() {
     throw new Error();
   }
@@ -21,6 +20,7 @@ class CardGroup {
   select(key, value) {
     return this.setParams(new Map([[key, value]]));
   }
+
   // sets multiple key-value pairs for this.params
   setParams(subFieldMap) {
     const copy = this.clone();
@@ -32,7 +32,10 @@ class CardGroup {
 
   getSelector() {
     const sel = this.subFields
-      .map((field) => `[data-${field}='${this.params.get(field)}']`)
+      .map(
+        (field) =>
+          `[data-${this.game.camelToKebab(field)}='${this.params.get(field)}']`,
+      )
       .join("");
     return `.card[data-position='${this.name}']${sel}`;
   }
@@ -40,7 +43,7 @@ class CardGroup {
   clearPrefixTags(card, prefix) {
     for (const field of Object.keys(card.dataset)) {
       const chr = field.charAt(prefix.length);
-      if (field.startsWith(prefix) && "A" <= chr && chr <= "Z") {
+      if (field.startsWith(prefix) && chr >= "A" && chr <= "Z") {
         delete card.dataset[field];
       }
     }
@@ -49,7 +52,7 @@ class CardGroup {
 
 class Deck extends CardGroup {
   clone() {
-    return new Deck(this.name, this.subFields, this.game);
+    return new Deck(this.game, this.name, this.subFields);
   }
 
   moveTo(dest, newParams) {
@@ -61,15 +64,9 @@ class Deck extends CardGroup {
     );
     deckParams.set("startingPosition", this.name);
 
-    // create the card
-    const card = document.createElement("div");
-    card.classList.add("card");
-    this.game.addCardParams(card, deckParams);
+    const card = this.game.createCard(deckParams);
 
-    this.game.gameArea.append(card);
-
-    // reduce the count
-    this.changeCount(-1);
+    this.addCount(-1);
 
     const recFunc = dest.receiveCard(card, newParams);
 
@@ -92,27 +89,22 @@ class Deck extends CardGroup {
 
     return () => {
       card.remove();
-      this.changeCount(1);
+      this.addCount(1);
     };
   }
 
   // creates the div.card for the deck and appends it to the game area
   instantiate(params) {
-    const deck = document.createElement("div");
-    deck.classList.add("card");
-
     const deckParams = new Map(params);
     deckParams.set("position", this.name);
     for (const field of this.subFields) {
       deckParams.set(field, this.params.get(field));
     }
 
-    this.game.addCardParams(deck, deckParams);
-
-    this.game.gameArea.append(deck);
+    this.game.createCard(deckParams);
   }
 
-  changeCount(delta) {
+  addCount(delta) {
     const deck = this.game.gameArea.querySelector(this.getSelector());
     const count = Number.parseInt(deck.dataset.deckCount);
 
@@ -126,15 +118,13 @@ class Deck extends CardGroup {
 }
 
 class CardField extends CardGroup {
-  constructor(name, subFields, maxSize, game) {
-    super(name, subFields, game);
+  constructor(game, name, subFields, maxSize) {
+    super(game, name, subFields);
     this.maxSize = maxSize;
-
-    this.fieldParameters = ["position", "fieldPosition", "fieldSize"];
   }
 
   clone() {
-    return new CardField(this.name, this.subFields, this.maxSize, this.game);
+    return new CardField(this.game, this.name, this.subFields, this.maxSize);
   }
 
   // NOTE: if count is undefined, getCards(...) returns the entire array.
@@ -142,7 +132,6 @@ class CardField extends CardGroup {
     const cards = this.getCards(cardParams, count);
 
     for (const card of cards) {
-      // remove the card from this
       for (const field of this.subFields) {
         delete card.dataset[field];
       }
@@ -153,7 +142,7 @@ class CardField extends CardGroup {
     this.refreshField();
 
     const funcs = cards.map((card) => dest.receiveCard(card, newParams));
-    // add the card to the other thing
+
     return () => {
       for (const func of funcs) {
         if (func !== undefined) {
@@ -181,11 +170,9 @@ class CardField extends CardGroup {
   }
 
   refreshField() {
-    const otherCards = Array.from(
-      this.game.gameArea.querySelectorAll(this.getSelector()),
-    );
+    const cards = Array.from(this.game.gameArea.querySelectorAll(this.getSelector()));
     // sort: keep the data-field-position order, with the undefined ones at the end (in appearance order)
-    otherCards.sort((c1, c2) => {
+    cards.sort((c1, c2) => {
       if (!("fieldPosition" in c1.dataset)) {
         if (!("fieldPosition" in c2.dataset)) {
           return 0; // both undefined: keep the previous order
@@ -202,9 +189,9 @@ class CardField extends CardGroup {
       );
     });
 
-    for (const [i, oc] of otherCards.entries()) {
-      oc.dataset.fieldPosition = i;
-      oc.dataset.fieldSize = otherCards.length;
+    for (const [i, card] of cards.entries()) {
+      card.dataset.fieldPosition = i;
+      card.dataset.fieldSize = cards.length;
     }
   }
 }
@@ -220,13 +207,13 @@ class BaseGame {
     this.decks = new Map(
       this.deckGenerators.map(([name, ...args]) => [
         name,
-        new Deck(name, ...args, this),
+        new Deck(this, name, ...args),
       ]),
     );
     this.cardFields = new Map(
       this.cardFieldGenerators.map(([name, ...args]) => [
         name,
-        new CardField(name, ...args, this),
+        new CardField(this, name, ...args),
       ]),
     );
 
@@ -278,6 +265,10 @@ class BaseGame {
     throw new Error();
   }
 
+  isPlayerSelf(playerId) {
+    return Number.parseInt(playerId) === this.playerId;
+  }
+
   get styleRules() {
     const rules = [];
 
@@ -293,7 +284,7 @@ class BaseGame {
     );
 
     const cardFieldSize = Math.max(
-      ...Array.from(this.cardFields).map(([_, cf]) => cf.maxSize),
+      ...Array.from(this.cardFields.values()).map((cf) => cf.maxSize),
     );
     for (let tot = 1; tot <= cardFieldSize; tot++) {
       for (let pos = 0; pos < tot; pos++) {
@@ -446,6 +437,10 @@ class BaseGame {
     this.ws.send(msg);
   }
 
+  async sleep(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
+  }
+
   async awaitTransition(element, func) {
     if ("noAnimations" in this.gameArea.dataset) {
       func();
@@ -506,15 +501,10 @@ class BaseGame {
 
     await obj.promise;
     this.transitionPromiseResolve = undefined;
-    this.transitionEvents = new Map();
 
     if (afterFunc !== undefined) {
       afterFunc();
     }
-  }
-
-  async sleep(ms) {
-    return new Promise((resolve) => window.setTimeout(resolve, ms));
   }
 
   createToast(message, params) {
@@ -569,14 +559,6 @@ class BaseGame {
     }
   }
 
-  toggleCardParam(card, param) {
-    if (param in card.dataset) {
-      delete card.dataset[param];
-    } else {
-      card.dataset[param] = "";
-    }
-  }
-
   createCard(params) {
     const card = document.createElement("div");
     card.classList.add("card");
@@ -587,7 +569,7 @@ class BaseGame {
 
   async handleCmd(cmd, ...args) {
     await this.pendingHandler;
-    const camelCmd = this.separatorToCamel(cmd, "_", true);
+    const camelCmd = this.snakeToCamel(cmd, true);
     const func = this[`cmd${camelCmd}`];
     if (func) {
       await func.bind(this)(...args);
@@ -670,7 +652,7 @@ class BaseGame {
 
     const selectParams = new Map();
     const newParams = new Map();
-    if (this.playerId === Number.parseInt(playerId)) {
+    if (this.isPlayerSelf(playerId)) {
       selectParams.set("suit", suit);
       selectParams.set("number", number);
     } else {
@@ -691,11 +673,13 @@ class BaseGame {
 
   cmdResults(...results) {
     const table = document.getElementById("results-table");
-    const sortedResults = Array.from(results.entries()).sort(([, a], [, b]) => b - a);
+    const sortedResults = Array.from(results.map(Number.parseInt).entries()).sort(
+      ([, a], [, b]) => b - a,
+    );
     for (const [playerId, points] of sortedResults) {
       const row = table.insertRow();
-      if (this.playerId === Number.parseInt(playerId)) {
-        row.classList.add("me");
+      if (playerId === this.playerId) {
+        row.classList.add("self");
       }
       const playerCell = row.insertCell();
       playerCell.textContent = this.players[playerId];
@@ -705,13 +689,16 @@ class BaseGame {
     document.getElementById("results").showPopover();
   }
 
-  camelToSeparator(str, separator = "_") {
-    return str.replaceAll(/[A-Z]/g, (m) => `${separator}${m.toLowerCase()}`);
+  camelToKebab(str) {
+    return str.replaceAll(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
   }
-  separatorToCamel(str, separator = "_", capitalized = false) {
-    const startSel = capitalized ? "^|" : "";
-    const regex = new RegExp(`((?:${startSel}${separator})[a-z])`, "g");
-    return str.replaceAll(regex, (m) => m.at(-1).toUpperCase());
+
+  snakeToCamel(str, capitalized = false) {
+    const out = str.replaceAll(/(?:^|_)[a-z]/g, (m) => m.at(-1).toUpperCase());
+    if (capitalized) {
+      return this.capitalizeFirst(out);
+    }
+    return out;
   }
 
   capitalizeFirst(str) {
