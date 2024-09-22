@@ -678,7 +678,7 @@ class BaseGame {
     );
     for (const [playerId, points] of sortedResults) {
       const row = table.insertRow();
-      if (playerId === this.playerId) {
+      if (this.isPlayerSelf(playerId)) {
         row.classList.add("self");
       }
       const playerCell = row.insertCell();
