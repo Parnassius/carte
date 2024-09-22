@@ -673,9 +673,9 @@ class BaseGame {
 
   cmdResults(...results) {
     const table = document.getElementById("results-table");
-    const sortedResults = Array.from(results.map((n) => Number.parseInt(n)).entries()).sort(
-      ([, a], [, b]) => b - a,
-    );
+    const sortedResults = Array.from(
+      results.map((n) => Number.parseInt(n)).entries(),
+    ).sort(([, a], [, b]) => b - a);
     for (const [playerId, points] of sortedResults) {
       const row = table.insertRow();
       if (this.isPlayerSelf(playerId)) {
