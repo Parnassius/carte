@@ -694,7 +694,7 @@ class BaseGame {
   }
 
   snakeToCamel(str, capitalized = false) {
-    const out = str.replaceAll(/(?:^|_)[a-z]/g, (m) => m.at(-1).toUpperCase());
+    const out = str.replaceAll(/_[a-z]/g, (m) => m.at(-1).toUpperCase());
     if (capitalized) {
       return this.capitalizeFirst(out);
     }
