@@ -1,0 +1,153 @@
+#game-area[data-game="scopa"] {
+  &[data-playing][data-playing-status="hand"]
+    .card[data-position="hand"][data-player="self"]::after {
+    display: block;
+  }
+
+  &[data-playing-status="capture"] {
+    /* ACTIVE CARD */
+    & .card[data-position="hand"][data-active] {
+      --active-card-offset: 0.25;
+    }
+    /* TAKEABLE CARDS */
+    &[data-playing] .card[data-position="playing-area"] {
+      &[data-takeable],
+      &[data-selected] {
+        &::after {
+          display: block;
+        }
+      }
+    }
+    /* SELECTED CARDS */
+    & .card[data-position="playing-area"][data-selected] {
+      --selected-card-offset: 0.25;
+    }
+  }
+
+  div {
+    --unit: min(
+      calc(
+        100dvw /
+        (
+          var(--card-height-raw) +
+          var(--card-width-raw) *
+          3 +
+          var(--gap-raw) *
+          5 +
+          var(--deck-shadow-max-width-raw)
+        )
+      ),
+      calc(
+        100dvh /
+        (
+          var(--card-height-raw) *
+          4 +
+          var(--gap-raw) *
+          4 +
+          var(--deck-shadow-max-width-raw) *
+          2
+        )
+      )
+    );
+
+    @media (orientation: portrait) {
+      --center-x: calc(
+        50dvw +
+        (var(--left) + var(--card-height) - var(--card-width)) /
+        2
+      );
+    }
+
+    --card-starting-y: var(--center-y);
+    --card-starting-x: var(--left);
+
+    &.card {
+      &[data-position="deck"] {
+        top: calc(var(--center-y) - var(--deck-shadow-width) / 2);
+        left: var(--left);
+      }
+      &[data-starting-position="deck"] {
+        --card-starting-x: var(--left);
+        --card-starting-y: calc(var(--center-y) - var(--deck-shadow-width) / 2);
+      }
+
+      &[data-position="playing-area"] {
+        --selected-card-offset: 0;
+        top: calc(var(--center-y) - var(--selected-card-offset) * var(--card-height));
+        left: calc(
+          var(--center-x) +
+          (var(--card-field-position) - (var(--card-field-size) - 1) / 2) *
+          (var(--gap) + var(--card-width))
+        );
+      }
+
+      &[data-position="hand"] {
+        --active-card-offset: 0;
+        z-index: 40;
+        left: calc(
+          var(--center-x) +
+          (var(--card-field-position) - (var(--card-field-size) - 1) / 2) *
+          (var(--gap) + var(--card-width))
+        );
+        &[data-player="opponent"] {
+          top: calc(var(--top) + var(--active-card-offset) * var(--card-height));
+        }
+        &[data-player="self"] {
+          top: calc(var(--bottom) - var(--active-card-offset) * var(--card-height));
+        }
+      }
+
+      &[data-position="points"] {
+        --card-rotation: 1;
+        --deck-writing-mode: vertical-rl;
+        z-index: 20;
+        left: calc(var(--left) + var(--rotation-diff));
+        &[data-player="opponent"] {
+          top: calc(var(--top) - var(--rotation-diff));
+        }
+        &[data-player="self"] {
+          top: calc(var(--bottom) - var(--deck-shadow-width) + var(--rotation-diff));
+        }
+      }
+
+      &[data-position="points-scopa"] {
+        --num-offset: calc(
+          2 *
+          var(--card-field-position) /
+          (var(--card-field-size) - 1) -
+          1
+        );
+        &[data-field-size="1"] {
+          --num-offset: 0;
+        }
+        left: calc(
+          /* base distance from the left: center */
+          var(--left) +
+          var(--deck-shadow-width) +
+          var(--rotation-diff) +
+          /* card based count */
+          (var(--rotation-diff) - var(--card-radius) / 2) *
+          var(--num-offset)
+        );
+        z-index: var(--card-field-position);
+        &[data-player="opponent"] {
+          top: calc(var(--top) + var(--deck-shadow-width));
+          --card-rotation: 2; /* upside down */
+        }
+        &[data-player="self"] {
+          top: calc(var(--bottom));
+        }
+      }
+    }
+
+    &.name-tag {
+      left: var(--gap);
+      &[data-player="opponent"] {
+        top: calc(var(--gap) * 2 + var(--card-width) + var(--deck-shadow-width));
+      }
+      &[data-player="self"] {
+        bottom: calc(var(--gap) * 2 + var(--card-width) + var(--deck-shadow-width));
+      }
+    }
+  }
+}

@@ -559,6 +559,14 @@ class BaseGame {
     }
   }
 
+  toggleCardParam(card, param) {
+    if (param in card.dataset) {
+      delete card.dataset[param];
+    } else {
+      card.dataset[param] = "";
+    }
+  }
+
   createCard(params) {
     const card = document.createElement("div");
     card.classList.add("card");
