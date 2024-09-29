@@ -41,7 +41,7 @@
         100dvh /
         (
           var(--card-height-raw) *
-          4 +
+          5 +
           var(--gap-raw) *
           4 +
           var(--deck-shadow-max-width-raw) *
@@ -50,13 +50,7 @@
       )
     );
 
-    @media (orientation: portrait) {
-      --center-x: calc(
-        50dvw +
-        (var(--left) + var(--card-height) - var(--card-width)) /
-        2
-      );
-    }
+    --center-x: calc(50dvw + (var(--left) + var(--card-height) - var(--card-width)) / 2);
 
     --card-starting-y: var(--center-y);
     --card-starting-x: var(--left);
@@ -73,10 +67,42 @@
 
       &[data-position="playing-area"] {
         --selected-card-offset: 0;
-        top: calc(var(--center-y) - var(--selected-card-offset) * var(--card-height));
+
+        /* is 0 for a --card-field-position in the last row, 1 for any previous row */
+        /* the outermost round(down, ...) function can effectively be replaced by sign(...), as soon as it's supproted in chrome */
+        --selector: round(
+          down,
+          (
+            round(down, var(--card-field-position) / 6) -
+            round(down, var(--card-field-size) / 6)
+          ) /
+          3 /* max number of rows */
+        );
+
+        --row-position: mod(var(--card-field-position), 6);
+        --row-size: calc(
+          /* last row */
+          (var(--selector) + 1) *
+          mod(var(--card-field-size), 6) -
+          /* previous rows: always 6 elements wide */
+          var(--selector) *
+          6
+        );
+
+        top: calc(
+          var(--center-y) -
+          var(--selected-card-offset) *
+          var(--card-height) +
+          (
+            round(down, var(--card-field-position) / 6) -
+            round(down, (var(--card-field-size) - 0.5) / 6) /
+            2
+          ) *
+          (var(--gap) + var(--card-height))
+        );
         left: calc(
           var(--center-x) +
-          (var(--card-field-position) - (var(--card-field-size) - 1) / 2) *
+          (var(--row-position) - (var(--row-size) - 1) / 2) *
           (var(--gap) + var(--card-width))
         );
       }

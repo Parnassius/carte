@@ -286,13 +286,13 @@ class BaseGame {
     const cardFieldSize = Math.max(
       ...Array.from(this.cardFields.values()).map((cf) => cf.maxSize),
     );
-    for (let tot = 1; tot <= cardFieldSize; tot++) {
-      for (let pos = 0; pos < tot; pos++) {
-        rules.push(`&[data-field-position='${pos}'][data-field-size='${tot}'] {
-          --card-field-position: ${pos};
-          --card-field-size: ${tot};
-        }`);
-      }
+    for (let i = 1; i <= cardFieldSize; i++) {
+      rules.push(`&[data-field-position='${i - 1}'] {
+        --card-field-position: ${i - 1};
+      }`);
+      rules.push(`&[data-field-size='${i}'] {
+        --card-field-size: ${i};
+      }`);
     }
 
     const deckShadows = (amount) => {
