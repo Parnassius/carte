@@ -177,3 +177,19 @@
     }
   }
 }
+
+#results {
+  #results-table {
+    tr {
+      > td:nth-child(n + 3) {
+        font-weight: normal;
+        font-size: 0.9em;
+        color: #aaa;
+        text-align: center;
+      }
+      > td:nth-child(2) {
+        padding-right: 1em;
+      }
+    }
+  }
+}

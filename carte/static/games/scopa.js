@@ -253,8 +253,79 @@ class Scopa extends BaseGame {
     await this.awaitCardTransitions(tableFunc);
   }
 
+  cmdResultsPrepare() {
+    const table = document.getElementById("results-table");
+    const titleRow = table.insertRow();
+    for (let i = 0; i < 8; i++) {
+      titleRow.insertCell();
+    }
+
+    for (const [playerId, playerName] of this.players.entries()) {
+      const row = table.insertRow();
+      if (this.isPlayerSelf(playerId)) {
+        row.classList.add("self");
+      }
+      const playerCell = row.insertCell();
+      playerCell.textContent = playerName;
+
+      // points, cards, denari, primera, settebello, scopae
+      for (let i = 0; i < 6; i++) {
+        row.insertCell();
+      }
+    }
+    document.getElementById("results").showPopover();
+  }
+
+  cmdResultsDetail(type, ...args) {
+    const resultsCells = new Map([
+      ["cards", 3],
+      ["denari", 4],
+      ["primiera", 5],
+      ["settebello", 6],
+      ["scopa", 7],
+    ]);
+    const resultsTitles = new Map([
+      ["cards", "Cards"],
+      ["denari", "Denari"],
+      ["primiera", "Primiera"],
+      ["settebello", "Settebello"],
+      ["scopa", "Scopae"],
+    ]);
+
+    for (const playerId of this.players.keys()) {
+      this.getResultsCell(-1, resultsCells.get(type)).textContent =
+        resultsTitles.get(type);
+      const cell = this.getResultsCell(playerId, resultsCells.get(type));
+      if (type === "primiera") {
+        cell.textContent = `${args[playerId]} (${args[playerId + 3]}${args[playerId + 6]}${args[playerId + 9]}${args[playerId + 12]})`;
+      } else {
+        cell.textContent = args[playerId];
+      }
+    }
+  }
+
   cmdResults(...results) {
-    super.cmdResults(...results);
+    const table = document.getElementById("results-table");
+    const sortedResults = Array.from(
+      results.map((n) => Number.parseInt(n)).entries(),
+    ).sort(([, a], [, b]) => b - a);
+
+    const rows = Array.from(table.querySelectorAll("tr"));
+
+    for (const [playerId, points] of sortedResults) {
+      const row = rows[playerId + 1];
+      const cell = this.getResultsCell(0, 2);
+      cell.textContent = points;
+
+      table.querySelector("tbody").appendChild(row);
+    }
+    document.getElementById("results").showPopover();
+  }
+
+  getResultsCell(playerId, index) {
+    return document.querySelector(
+      `#results-table tr:nth-child(${playerId + 2}) > td:nth-child(${index})`,
+    );
   }
 }
 

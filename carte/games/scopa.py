@@ -80,7 +80,11 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         # update points (i.e. number of cards taken) for both players and for the deck
         for player_id, player in enumerate(self._players):
             if player.points:
-                yield ["points", player_id, len(player.points)]
+                yield [
+                    "points",
+                    player_id,
+                    len(player.points) - len(player.scopa_cards),
+                ]
 
             if player.scopa_cards:
                 yield ["points_scopa", player_id, *player.scopa_cards]
@@ -201,7 +205,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         # incomplete sum: recalculate the takeable cards, excuding the cards
         # that have already been taken
         new_takeable_cards = self._calculate_takeable(
-            self._active_card, tuple(self._selected_cards)
+            self._active_card, self._selected_cards
         )
 
         # changes in the takeable cards: members EITHER before OR after, not both
@@ -261,16 +265,19 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
                 self._game_status = GameStatus.ENDED
 
+                await self._send("results_prepare")
+
                 results = [0 for _ in self._players]
+
+                cards_winner = await self._results_cards()
+                denari_winner = await self._results_denari()
+                primiera_winner = await self._results_primiera()
+                settebello_winner = await self._results_settebello()
 
                 scopa_points = tuple(
                     len(player.scopa_cards) for player in self._players
                 )
-                cards_winner = self._results_cards()
-                denari_winner = self._results_denari()
-                primiera_winner = self._results_primiera()
-                settebello_winner = self._results_settebello()
-
+                await self._send("results_detail", "scopa", *scopa_points)
                 results = [
                     sum(t)
                     for t in zip(
@@ -299,8 +306,11 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         return self._calculate_takeable(card)
 
     def _calculate_takeable(
-        self, card: Card, used: tuple[Card, ...] = ()
+        self, card: Card, used: list[Card] | None = None
     ) -> list[Card]:
+        if used is None:
+            used = []
+
         card_value = self._card_values[card.number]
         # no card can be taken with a bigger value: check combinations
         # only keep cards with smaller or equal values
@@ -343,10 +353,12 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         return sorted(out)
 
-    def _results_cards(self) -> list[int]:
+    async def _results_cards(self) -> list[int]:
         scores = [len(player.points) for player in self._players]
-        max_value = max(scores)
 
+        await self._send("results_detail", "cards", *scores)
+
+        max_value = max(scores)
         results = [0 for _ in self._players]
         if max_value != 20:
             winner = scores.index(max_value)
@@ -354,43 +366,66 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         return results
 
-    def _results_denari(self) -> list[int]:
+    async def _results_denari(self) -> list[int]:
         scores = [
             sum(1 for c in player.points if c.suit == Suit.DENARI)
             for player in self._players
         ]
-        max_value = max(scores)
 
+        await self._send("results_detail", "denari", *scores)
+
+        max_value = max(scores)
         results = [0 for _ in self._players]
-        if max_value != 20:
+        if max_value != 5:
             winner = scores.index(max_value)
             results[winner] += 1
 
         return results
 
-    def _results_primiera(self) -> list[int]:
-        scores = [
-            sum(
-                max(
-                    self._primiera_card_values[card.number]
-                    for card in player.points
-                    if card.suit == suit
-                )
-                for suit in Suit
-            )
-            for player in self._players
-        ]
-        max_value = max(scores)
+    async def _results_primiera(self) -> list[int]:
+        card_numbers: list[list[str]] = []
+        scores = []
+
+        for player in self._players:
+            card_numbers.append([])
+            scores.append(0)
+            for suit in Suit:
+                suit_cards = [card for card in player.points if card.suit == suit]
+                card_score = 0
+                if suit_cards:
+                    card = max(
+                        suit_cards,
+                        key=lambda card: self._primiera_card_values[card.number],
+                    )
+                    card_score = self._primiera_card_values[card.number]
+                else:
+                    card = None
+
+                scores[-1] += card_score
+                card_numbers[-1].append(str(card.number) if card is not None else "0")
+
+        primiera_cards = []
+        for i, suit in enumerate(Suit):  # type: ignore[assignment]
+            primiera_cards.append(str(suit))
+            primiera_cards.extend(cn[i] for cn in card_numbers)
+
+        await self._send("results_detail", "primiera", *scores, *primiera_cards)
+
+        sorted_scores = sorted(scores, reverse=True)
+        max_value = sorted_scores[0]
 
         results = [0 for _ in self._players]
-        if max_value != 20:
+        if max_value != scores[1]:
             winner = scores.index(max_value)
             results[winner] += 1
 
         return results
 
-    def _results_settebello(self) -> list[int]:
-        return [
+    async def _results_settebello(self) -> list[int]:
+        out = [
             1 if Card(suit=Suit.DENARI, number=CardNumber.SETTE) in player.points else 0
             for player in self._players
         ]
+        await self._send("results_detail", "settebello", *out)
+
+        return out
