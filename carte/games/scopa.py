@@ -415,7 +415,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         max_value = sorted_scores[0]
 
         results = [0 for _ in self._players]
-        if max_value != scores[1]:
+        if max_value != sorted_scores[1]:
             winner = scores.index(max_value)
             results[winner] += 1
 

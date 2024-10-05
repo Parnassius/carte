@@ -50,7 +50,44 @@
       )
     );
 
+    /* PORTRAIT OR SQUARISH ASPECT RATIO: the cards are centered around the
+     * "leftover" space from the points decks and the playing area wraps with
+     * a width of 6 (like the hands) */
     --center-x: calc(50dvw + (var(--left) + var(--card-height) - var(--card-width)) / 2);
+    --playing-area-wrap: 6;
+
+    /* WIDE LANDSCAPE: the hand/playing-area cards are centered around the
+     * center of the screen; it's wide enough to have 7-wrapped playing area
+     * (so at most 2 rows) and the vertical size of the cards can be increased) */
+    @media (min-aspect-ratio: 1.5) {
+      --unit: min(
+        calc(
+          100dvw /
+          (
+            var(--card-height-raw) +
+            var(--card-width-raw) *
+            8 +
+            var(--gap-raw) *
+            10 +
+            var(--deck-shadow-max-width-raw)
+          )
+        ),
+        calc(
+          100dvh /
+          (
+            var(--card-height-raw) *
+            5 +
+            var(--gap-raw) *
+            4 +
+            var(--deck-shadow-max-width-raw) *
+            2
+          )
+        )
+      );
+
+      --center-x: calc(50dvw - var(--card-width) / 2);
+      --playing-area-wrap: 7;
+    }
 
     --card-starting-y: var(--center-y);
     --card-starting-x: var(--left);
@@ -73,20 +110,20 @@
         --selector: round(
           down,
           (
-            round(down, var(--card-field-position) / 6) -
-            round(down, var(--card-field-size) / 6)
+            round(down, var(--card-field-position) / var(--playing-area-wrap)) -
+            round(down, var(--card-field-size) / var(--playing-area-wrap))
           ) /
-          3 /* max number of rows */
+          3 /* max number of rows: 3 is the worst case scenario */
         );
 
-        --row-position: mod(var(--card-field-position), 6);
+        --row-position: mod(var(--card-field-position), var(--playing-area-wrap));
         --row-size: calc(
           /* last row */
           (var(--selector) + 1) *
-          mod(var(--card-field-size), 6) -
+          mod(var(--card-field-size), var(--playing-area-wrap)) -
           /* previous rows: always 6 elements wide */
           var(--selector) *
-          6
+          var(--playing-area-wrap)
         );
 
         top: calc(
@@ -94,8 +131,8 @@
           var(--selected-card-offset) *
           var(--card-height) +
           (
-            round(down, var(--card-field-position) / 6) -
-            round(down, (var(--card-field-size) - 0.5) / 6) /
+            round(down, var(--card-field-position) / var(--playing-area-wrap)) -
+            round(down, (var(--card-field-size) - 0.5) / var(--playing-area-wrap)) /
             2
           ) *
           (var(--gap) + var(--card-height))
@@ -169,10 +206,10 @@
     &.name-tag {
       left: var(--gap);
       &[data-player="opponent"] {
-        top: calc(var(--gap) * 2 + var(--card-width) + var(--deck-shadow-width));
+        top: calc(var(--gap) * 2 + var(--card-height) + var(--deck-shadow-width));
       }
       &[data-player="self"] {
-        bottom: calc(var(--gap) * 2 + var(--card-width) + var(--deck-shadow-width));
+        bottom: calc(var(--gap) * 2 + var(--card-height) + var(--deck-shadow-width));
       }
     }
   }
@@ -180,15 +217,81 @@
 
 #results {
   #results-table {
-    tr {
-      > td:nth-child(n + 3) {
-        font-weight: normal;
-        font-size: 0.9em;
-        color: #aaa;
-        text-align: center;
+    --transition-time: 0.25s;
+    thead > tr {
+      transition: border-width 0s var(--transition-time);
+      > td {
+        transition: line-height var(--transition-time);
+        line-height: 2.5em;
       }
-      > td:nth-child(2) {
-        padding-right: 1em;
+    }
+
+    thead,
+    tbody {
+      > tr > td {
+        overflow: hidden;
+        white-space: nowrap;
+
+        &:nth-child(2) {
+          text-align: right;
+          padding-right: 1em;
+        }
+
+        &[data-detail-type] {
+          font-weight: normal;
+          font-size: 0.9em;
+          text-align: center;
+
+          width: 90px;
+          max-width: 90px;
+          transition-property: all;
+          transition-duration: var(--transition-time);
+        }
+      }
+    }
+
+    tbody > tr > td {
+      &[data-detail-type] {
+        font-family: monospace;
+        color: var(--background-primary-highlight-strong);
+      }
+
+      &[data-winner] {
+        color: inherit;
+      }
+
+      &[data-detail-type="primiera"] > span {
+        white-space-collapse: preserve;
+        &:before {
+          content: "(";
+        }
+        &:after {
+          content: ")";
+        }
+      }
+    }
+    tfoot {
+      text-align: center;
+      > tr {
+        border: none;
+      }
+    }
+
+    &.contracted {
+      thead > tr {
+        border-width: 0px;
+        > td {
+          opacity: 0;
+          line-height: 0em;
+        }
+      }
+      thead,
+      tbody {
+        > tr > td:nth-child(n + 3) {
+          max-width: 0px;
+          width: 0px;
+          opacity: 0;
+        }
       }
     }
   }

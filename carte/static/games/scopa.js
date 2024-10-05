@@ -255,13 +255,15 @@ class Scopa extends BaseGame {
 
   cmdResultsPrepare() {
     const table = document.getElementById("results-table");
-    const titleRow = table.insertRow();
-    for (let i = 0; i < 8; i++) {
-      titleRow.insertCell();
+    table.classList.add("contracted");
+    const tHead = table.createTHead().insertRow();
+    for (let i = 0; i < 7; i++) {
+      tHead.insertCell();
     }
 
+    const tBody = table.createTBody();
     for (const [playerId, playerName] of this.players.entries()) {
-      const row = table.insertRow();
+      const row = tBody.insertRow();
       if (this.isPlayerSelf(playerId)) {
         row.classList.add("self");
       }
@@ -273,7 +275,15 @@ class Scopa extends BaseGame {
         row.insertCell();
       }
     }
-    document.getElementById("results").showPopover();
+
+    const footerCell = table.createTFoot().insertRow().insertCell();
+    footerCell.colSpan = 7;
+    const btn = document.createElement("input");
+    btn.type = "button";
+    btn.value = "Details";
+    btn.onclick = () => table.classList.toggle("contracted");
+
+    footerCell.appendChild(btn);
   }
 
   cmdResultsDetail(type, ...args) {
@@ -285,47 +295,77 @@ class Scopa extends BaseGame {
       ["scopa", 7],
     ]);
     const resultsTitles = new Map([
-      ["cards", "Cards"],
+      ["cards", "Carte"],
       ["denari", "Denari"],
       ["primiera", "Primiera"],
       ["settebello", "Settebello"],
-      ["scopa", "Scopae"],
+      ["scopa", "Scope"],
     ]);
+    const colId = resultsCells.get(type);
 
+    const table = document.getElementById("results-table");
+    const tHead = table.createTHead();
+    const titleCell = tHead.querySelector(`tr > td:nth-child(${colId})`);
+    titleCell.textContent = resultsTitles.get(type);
+    titleCell.dataset.detailType = type;
+
+    const tBody = table.tBodies[0];
     for (const playerId of this.players.keys()) {
-      this.getResultsCell(-1, resultsCells.get(type)).textContent =
-        resultsTitles.get(type);
-      const cell = this.getResultsCell(playerId, resultsCells.get(type));
+      const cell = tBody.querySelector(
+        `tr:nth-child(${playerId + 1}) > td:nth-child(${colId})`,
+      );
+      cell.dataset.detailType = type;
+
+      const value = Number.parseInt(args[playerId]);
       if (type === "primiera") {
-        cell.textContent = `${args[playerId]} (${args[playerId + 3]}${args[playerId + 6]}${args[playerId + 9]}${args[playerId + 12]})`;
+        const values = args
+          .slice(2)
+          .filter((_v, i) => (i - playerId - 1) % 3 === 0)
+          .map((v) => {
+            if (["fante", "cavallo", "re"].includes(v)) {
+              return v[0].toUpperCase();
+            }
+            return Number.parseInt(v) === 0 ? " " : v;
+          });
+        const span = document.createElement("span");
+        span.textContent = values.join("");
+        cell.append(`${value} `, span);
+      } else if (type === "settebello") {
+        cell.textContent = value > 0 ? "✕" : "";
+      } else if (type === "scopa") {
+        cell.textContent = value > 0 ? value : "";
       } else {
-        cell.textContent = args[playerId];
+        cell.textContent = value;
+      }
+
+      if (type !== "scopa") {
+        if (value > Number.parseInt(args[1 - playerId])) {
+          cell.dataset.winner = "";
+        }
+      } else if (value > 0) {
+        cell.dataset.winner = "";
       }
     }
   }
 
   cmdResults(...results) {
-    const table = document.getElementById("results-table");
+    const tBody = document.getElementById("results-table").tBodies[0];
     const sortedResults = Array.from(
       results.map((n) => Number.parseInt(n)).entries(),
     ).sort(([, a], [, b]) => b - a);
 
-    const rows = Array.from(table.querySelectorAll("tr"));
+    const rows = Array.from(tBody.querySelectorAll("tr"));
 
     for (const [playerId, points] of sortedResults) {
-      const row = rows[playerId + 1];
-      const cell = this.getResultsCell(0, 2);
+      // the row gets appended to the end to guarantee the correct order, so the
+      // first row should be updated every time
+      const row = rows[playerId];
+      const cell = row.querySelector("td:nth-child(2)");
       cell.textContent = points;
 
-      table.querySelector("tbody").appendChild(row);
+      tBody.appendChild(row);
     }
     document.getElementById("results").showPopover();
-  }
-
-  getResultsCell(playerId, index) {
-    return document.querySelector(
-      `#results-table tr:nth-child(${playerId + 2}) > td:nth-child(${index})`,
-    );
   }
 }
 
