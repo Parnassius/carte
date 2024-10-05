@@ -1,17 +1,4 @@
 {
-  "linter": {
-    "rules": {
-      "all": true,
-      "suspicious": {
-        "noConsole": {
-          "options": {
-            "allow": ["error", "info", "warn"],
-          },
-        },
-        "useErrorMessage": "off",
-      },
-    },
-  },
   "formatter": {
     "useEditorconfig": true,
     "lineWidth": 88,  // Black's default
