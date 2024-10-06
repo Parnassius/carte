@@ -255,6 +255,10 @@
       text-align: center;
       > tr {
         border: none;
+
+        button:after {
+          content: " <<";
+        }
       }
     }
 
@@ -271,6 +275,10 @@
       }
       tbody > tr > td:nth-last-child(1 of :not([data-details])) {
         padding-right: 1em;
+      }
+
+      tfoot button:after {
+        content: " >>";
       }
     }
   }

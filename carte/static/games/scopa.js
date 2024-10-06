@@ -279,9 +279,8 @@ class Scopa extends BaseGame {
 
     const footerCell = table.createTFoot().insertRow().insertCell();
     footerCell.colSpan = 3;
-    const btn = document.createElement("input");
-    btn.type = "button";
-    btn.value = "Details";
+    const btn = document.createElement("button");
+    btn.textContent = "Details";
     btn.onclick = () => table.classList.toggle("contracted");
 
     footerCell.appendChild(btn);
