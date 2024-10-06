@@ -256,10 +256,6 @@ class Scopa extends BaseGame {
   cmdResultsPrepare() {
     const table = document.getElementById("results-table");
     table.classList.add("contracted");
-    const tHead = table.createTHead().insertRow();
-    for (let i = 0; i < 7; i++) {
-      tHead.insertCell();
-    }
 
     const tBody = table.createTBody();
     for (const [playerId, playerName] of this.players.entries()) {
@@ -271,13 +267,18 @@ class Scopa extends BaseGame {
       playerCell.textContent = playerName;
 
       // points, cards, denari, primera, settebello, scopae
-      for (let i = 0; i < 6; i++) {
-        row.insertCell();
+      const pointsCell = row.insertCell();
+      const detailsCell = row.insertCell();
+      detailsCell.dataset.details = "";
+
+      for (let i = 0; i < 5; i++) {
+        const div = document.createElement("div");
+        detailsCell.append(div);
       }
     }
 
     const footerCell = table.createTFoot().insertRow().insertCell();
-    footerCell.colSpan = 7;
+    footerCell.colSpan = 3;
     const btn = document.createElement("input");
     btn.type = "button";
     btn.value = "Details";
@@ -287,13 +288,7 @@ class Scopa extends BaseGame {
   }
 
   cmdResultsDetail(type, ...args) {
-    const resultsCells = new Map([
-      ["cards", 3],
-      ["denari", 4],
-      ["primiera", 5],
-      ["settebello", 6],
-      ["scopa", 7],
-    ]);
+    const resultsCells = ["cards", "denari", "primiera", "settebello", "scopa"];
     const resultsTitles = new Map([
       ["cards", "Carte"],
       ["denari", "Denari"],
@@ -301,24 +296,19 @@ class Scopa extends BaseGame {
       ["settebello", "Settebello"],
       ["scopa", "Scope"],
     ]);
-    const colId = resultsCells.get(type);
+    const colId = resultsCells.indexOf(type);
 
     const table = document.getElementById("results-table");
-    const tHead = table.createTHead();
-    const titleCell = tHead.querySelector(`tr > td:nth-child(${colId})`);
-    titleCell.textContent = resultsTitles.get(type);
-    titleCell.dataset.detailType = type;
-
     const tBody = table.tBodies[0];
+    const rows = tBody.querySelectorAll("tr");
     for (const playerId of this.players.keys()) {
-      const cell = tBody.querySelector(
-        `tr:nth-child(${playerId + 1}) > td:nth-child(${colId})`,
-      );
-      cell.dataset.detailType = type;
+      const detailDiv = rows[playerId].querySelector(`div:nth-child(${colId + 1})`);
+      detailDiv.dataset.detailType = type;
+      detailDiv.append(`${resultsTitles.get(type)}: `);
 
       const value = Number.parseInt(args[playerId]);
       if (type === "primiera") {
-        const values = args
+        const cardValues = args
           .slice(2)
           .filter((_v, i) => (i - playerId - 1) % 3 === 0)
           .map((v) => {
@@ -328,22 +318,20 @@ class Scopa extends BaseGame {
             return Number.parseInt(v) === 0 ? " " : v;
           });
         const span = document.createElement("span");
-        span.textContent = values.join("");
-        cell.append(`${value} `, span);
+        span.textContent = cardValues.join("");
+        detailDiv.append(`${value} (`, span, ")");
       } else if (type === "settebello") {
-        cell.textContent = value > 0 ? "✕" : "";
-      } else if (type === "scopa") {
-        cell.textContent = value > 0 ? value : "";
+        detailDiv.append(value > 0 ? "✓" : "✕");
       } else {
-        cell.textContent = value;
+        detailDiv.append(value);
       }
 
       if (type !== "scopa") {
         if (value > Number.parseInt(args[1 - playerId])) {
-          cell.dataset.winner = "";
+          detailDiv.dataset.winner = "";
         }
       } else if (value > 0) {
-        cell.dataset.winner = "";
+        detailDiv.dataset.winner = "";
       }
     }
   }

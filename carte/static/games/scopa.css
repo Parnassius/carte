@@ -217,56 +217,37 @@
 
 #results {
   #results-table {
-    --transition-time: 0.25s;
-    thead > tr {
-      transition: border-width 0s var(--transition-time);
-      > td {
-        transition: line-height var(--transition-time);
-        line-height: 2.5em;
-      }
-    }
+    --transition-time: 0.5s;
+    tbody > tr > td[data-details] {
+      overflow: hidden;
+      white-space: nowrap;
 
-    thead,
-    tbody {
-      > tr > td {
-        overflow: hidden;
-        white-space: nowrap;
+      padding-top: 0.5em;
+      padding-bottom: 0.5em;
+      --width: 200px;
+      width: var(--width);
+      max-width: var(--width);
 
-        &:nth-child(2) {
-          text-align: right;
-          padding-right: 1em;
-        }
+      transition: width, max-width, padding, opacity;
+      transition-duration: var(--transition-time);
 
-        &[data-detail-type] {
-          font-weight: normal;
-          font-size: 0.9em;
-          text-align: center;
+      > div[data-detail-type] {
+        font-weight: normal;
+        font-size: 0.9em;
+        line-height: 1.5em;
 
-          width: 90px;
-          max-width: 90px;
-          transition-property: all;
-          transition-duration: var(--transition-time);
-        }
-      }
-    }
-
-    tbody > tr > td {
-      &[data-detail-type] {
-        font-family: monospace;
         color: var(--background-primary-highlight-strong);
-      }
 
-      &[data-winner] {
-        color: inherit;
-      }
+        transition-property: line-height, padding;
+        transition-duration: var(--transition-time);
 
-      &[data-detail-type="primiera"] > span {
-        white-space-collapse: preserve;
-        &:before {
-          content: "(";
+        &[data-winner] {
+          color: white;
         }
-        &:after {
-          content: ")";
+
+        &[data-detail-type="primiera"] > span {
+          font-family: monospace;
+          white-space-collapse: preserve-spaces;
         }
       }
     }
@@ -278,20 +259,18 @@
     }
 
     &.contracted {
-      thead > tr {
-        border-width: 0px;
-        > td {
-          opacity: 0;
+      tbody > tr > td[data-details] {
+        max-width: 0px;
+        width: 0px;
+        opacity: 0;
+        padding: 0;
+
+        > div[data-detail-type] {
           line-height: 0em;
         }
       }
-      thead,
-      tbody {
-        > tr > td:nth-child(n + 3) {
-          max-width: 0px;
-          width: 0px;
-          opacity: 0;
-        }
+      tbody > tr > td:nth-last-child(1 of :not([data-details])) {
+        padding-right: 1em;
       }
     }
   }
