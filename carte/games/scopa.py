@@ -78,12 +78,14 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             yield ["add_to_table", card]
 
         # update points (i.e. number of cards taken) for both players and for the deck
+        # -> capped at 6 to hide most of the information, without compromising the deck
+        #    height visuals
         for player_id, player in enumerate(self._players):
             if player.points:
                 yield [
                     "points",
                     player_id,
-                    len(player.points) - len(player.scopa_cards),
+                    min(len(player.points) - len(player.scopa_cards), 6),
                 ]
 
             if player.scopa_cards:

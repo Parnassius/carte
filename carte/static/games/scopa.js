@@ -20,7 +20,7 @@ class Scopa extends BaseGame {
   get deckGenerators() {
     return [
       ["deck", []],
-      ["points", ["player"]],
+      ["points", ["player"], 6],
     ];
   }
 

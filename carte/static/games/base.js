@@ -51,8 +51,13 @@ class CardGroup {
 }
 
 class Deck extends CardGroup {
+  constructor(game, name, subFields, capped = false) {
+    super(game, name, subFields);
+    this.capped = capped;
+  }
+
   clone() {
-    return new Deck(this.game, this.name, this.subFields);
+    return new Deck(this.game, this.name, this.subFields, this.capped);
   }
 
   moveTo(dest, newParams) {
@@ -101,19 +106,25 @@ class Deck extends CardGroup {
       deckParams.set(field, this.params.get(field));
     }
 
+    if (this.capped) {
+      deckParams.set("deckCapped", this.capped);
+    }
+
     this.game.createCard(deckParams);
   }
 
-  addCount(delta) {
+  get count() {
     const deck = this.game.gameArea.querySelector(this.getSelector());
-    const count = Number.parseInt(deck.dataset.deckCount);
+    return Number.parseInt(deck.dataset.deckCount);
+  }
 
-    deck.dataset.deckCount = count + delta;
+  addCount(delta) {
+    this.setCount(this.count + delta);
   }
 
   setCount(value) {
     const deck = this.game.gameArea.querySelector(this.getSelector());
-    deck.dataset.deckCount = value;
+    deck.dataset.deckCount = this.capped ? Math.min(this.capped, value) : value;
   }
 }
 
