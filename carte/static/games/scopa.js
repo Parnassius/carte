@@ -352,4 +352,4 @@ class Scopa extends BaseGame {
   }
 }
 
-window.scopa = new Scopa();
+new Scopa();
