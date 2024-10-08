@@ -271,6 +271,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
                 results = [0 for _ in self._players]
 
+                # await, because each function sends a "results_detail" message
                 cards_winner = await self._results_cards()
                 denari_winner = await self._results_denari()
                 primiera_winner = await self._results_primiera()
@@ -298,6 +299,8 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         self._playing_status = ScopaPlayingStatus.HAND
         return False
 
+    # check if the card that is played can be used to take or not
+    # if it can take, then the return value is a list of the cards that may be taken
     def _check_playing_card(self, card: Card) -> list[Card]:
         # take with the exact same card
         equipollent_cards = [c for c in self._table if c.number == card.number]
@@ -314,11 +317,9 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             used = []
 
         card_value = self._card_values[card.number]
-        # no card can be taken with a bigger value: check combinations
-        # only keep cards with smaller or equal values
-
         card_value -= sum(self._card_values[c.number] for c in used)
 
+        # only keep cards with smaller or equal value
         smaller_card_values = sorted(
             (
                 v
@@ -329,25 +330,30 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             ),
             reverse=True,
         )
-        # check which cards can combine to create
+        # check which cards can combine to be captured by card_value
         valid_values = self._check_combinations(card_value, smaller_card_values)
 
         return [c for c in self._table if self._card_values[c.number] in valid_values]
 
-    # recursively check if there's any combination of cards generating
+    # return any card value that may be combined with other cards on the table
+    # to be taken by the played card (card_value)
     def _check_combinations(
         self, card_value: int, values: list[int], starting_index: int = 0
     ) -> list[int]:
         out = set()
         for i, v in enumerate(values[starting_index:], start=starting_index):
             rem_value = card_value - v
-            # the first card was too big
+
+            # the selected card (v) is too big for card_value
             if rem_value < 0:
                 continue
-            # the first card fits perfectly: use it
+
+            # "v" is exactly card_value: consider it takeable; skip the recursive step
             if rem_value == 0:
                 out.add(v)
-            # the card does not fit perfectly: recurse
+                continue
+
+            # the selected card does not fit perfectly: recurse
             rec_out = self._check_combinations(rem_value, values, i + 1)
             if rec_out:
                 out.add(v)
@@ -355,6 +361,10 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         return sorted(out)
 
+    # all of the _results_*() functions send a results_detail message (and thus
+    # are async), detailing the information to be shown in the details section
+    # in the results table. they return a list containing the points that each
+    # "category" assigns to each player.
     async def _results_cards(self) -> list[int]:
         scores = [len(player.points) for player in self._players]
 
