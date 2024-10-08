@@ -692,6 +692,7 @@ class BaseGame {
       const playerCell = row.insertCell();
       playerCell.textContent = this.players[playerId];
       const pointsCell = row.insertCell();
+      pointsCell.dataset.points = "";
       pointsCell.textContent = points;
     }
     document.getElementById("results").showPopover();

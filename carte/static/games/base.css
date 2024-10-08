@@ -212,6 +212,10 @@
         &:last-child {
           padding-right: 1em;
         }
+
+        &[data-points] {
+          text-align: right;
+        }
       }
     }
   }

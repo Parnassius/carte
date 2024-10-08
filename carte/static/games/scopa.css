@@ -146,7 +146,6 @@
 
       &[data-position="hand"] {
         --active-card-offset: 0;
-        z-index: 40;
         left: calc(
           var(--center-x) +
           (var(--card-field-position) - (var(--card-field-size) - 1) / 2) *
@@ -163,7 +162,8 @@
       &[data-position="points"] {
         --card-rotation: 1;
         --deck-writing-mode: vertical-rl;
-        z-index: 20;
+        /* z-index of 18 to be above of all the scopa-points card (at most 18) */
+        z-index: 18;
         left: calc(var(--left) + var(--rotation-diff));
         &[data-player="opponent"] {
           top: calc(var(--top) - var(--rotation-diff));
@@ -217,19 +217,9 @@
 
 #results {
   #results-table {
-    --transition-time: 0.5s;
-    tbody > tr > td[data-details] {
-      overflow: hidden;
-      white-space: nowrap;
-
+    tr > td[data-details] {
       padding-top: 0.5em;
       padding-bottom: 0.5em;
-      --width: 200px;
-      width: var(--width);
-      max-width: var(--width);
-
-      transition: width, max-width, padding, opacity;
-      transition-duration: var(--transition-time);
 
       > div[data-detail-type] {
         font-weight: normal;
@@ -238,47 +228,17 @@
 
         color: var(--background-primary-highlight-strong);
 
-        transition-property: line-height, padding;
-        transition-duration: var(--transition-time);
+        padding-left: 1em;
+        border-left: 1px solid var(--background-primary-highlight-strong);
 
         &[data-winner] {
-          color: white;
+          color: var(--text-color);
         }
 
         &[data-detail-type="primiera"] > span {
           font-family: monospace;
           white-space-collapse: preserve-spaces;
         }
-      }
-    }
-    tfoot {
-      text-align: center;
-      > tr {
-        border: none;
-
-        button:after {
-          content: " <<";
-        }
-      }
-    }
-
-    &.contracted {
-      tbody > tr > td[data-details] {
-        max-width: 0px;
-        width: 0px;
-        opacity: 0;
-        padding: 0;
-
-        > div[data-detail-type] {
-          line-height: 0em;
-        }
-      }
-      tbody > tr > td:nth-last-child(1 of :not([data-details])) {
-        padding-right: 1em;
-      }
-
-      tfoot button:after {
-        content: " >>";
       }
     }
   }

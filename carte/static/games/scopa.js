@@ -257,33 +257,25 @@ class Scopa extends BaseGame {
     const table = document.getElementById("results-table");
     table.classList.add("contracted");
 
-    const tBody = table.createTBody();
     for (const [playerId, playerName] of this.players.entries()) {
-      const row = tBody.insertRow();
+      const row = table.insertRow();
       if (this.isPlayerSelf(playerId)) {
         row.classList.add("self");
       }
       const playerCell = row.insertCell();
       playerCell.textContent = playerName;
 
-      // points, cards, denari, primera, settebello, scopae
       const pointsCell = row.insertCell();
+      pointsCell.dataset.points = "";
+
+      // details cell, with 5 divs inside for carte/denari/primiera/settebello/scope
       const detailsCell = row.insertCell();
       detailsCell.dataset.details = "";
-
       for (let i = 0; i < 5; i++) {
         const div = document.createElement("div");
         detailsCell.append(div);
       }
     }
-
-    const footerCell = table.createTFoot().insertRow().insertCell();
-    footerCell.colSpan = 3;
-    const btn = document.createElement("button");
-    btn.textContent = "Details";
-    btn.onclick = () => table.classList.toggle("contracted");
-
-    footerCell.appendChild(btn);
   }
 
   cmdResultsDetail(type, ...args) {
@@ -295,13 +287,13 @@ class Scopa extends BaseGame {
       ["settebello", "Settebello"],
       ["scopa", "Scope"],
     ]);
-    const colId = resultsCells.indexOf(type);
+
+    const detId = resultsCells.indexOf(type);
 
     const table = document.getElementById("results-table");
-    const tBody = table.tBodies[0];
-    const rows = tBody.querySelectorAll("tr");
+    const rows = table.querySelectorAll("tr");
     for (const playerId of this.players.keys()) {
-      const detailDiv = rows[playerId].querySelector(`div:nth-child(${colId + 1})`);
+      const detailDiv = rows[playerId].querySelector(`div:nth-child(${detId + 1})`);
       detailDiv.dataset.detailType = type;
       detailDiv.append(`${resultsTitles.get(type)}: `);
 
@@ -314,7 +306,11 @@ class Scopa extends BaseGame {
             if (["fante", "cavallo", "re"].includes(v)) {
               return v[0].toUpperCase();
             }
-            return Number.parseInt(v) === 0 ? " " : v;
+            const n = Number.parseInt(v);
+            if (n === 1) {
+              return "A";
+            }
+            return n === 0 ? "-" : v;
           });
         const span = document.createElement("span");
         span.textContent = cardValues.join("");
@@ -336,21 +332,21 @@ class Scopa extends BaseGame {
   }
 
   cmdResults(...results) {
-    const tBody = document.getElementById("results-table").tBodies[0];
+    const table = document.getElementById("results-table");
     const sortedResults = Array.from(
       results.map((n) => Number.parseInt(n)).entries(),
     ).sort(([, a], [, b]) => b - a);
 
-    const rows = Array.from(tBody.querySelectorAll("tr"));
+    const rows = Array.from(table.querySelectorAll("tr"));
 
     for (const [playerId, points] of sortedResults) {
       // the row gets appended to the end to guarantee the correct order, so the
       // first row should be updated every time
       const row = rows[playerId];
-      const cell = row.querySelector("td:nth-child(2)");
+      const cell = row.querySelector("td[data-points]");
       cell.textContent = points;
 
-      tBody.appendChild(row);
+      table.appendChild(row);
     }
     document.getElementById("results").showPopover();
   }
