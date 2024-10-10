@@ -233,7 +233,6 @@
 
         &[data-detail-type="primiera"] > span {
           font-family: monospace;
-          white-space-collapse: preserve-spaces;
         }
       }
     }
