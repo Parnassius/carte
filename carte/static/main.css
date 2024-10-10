@@ -1,5 +1,6 @@
 :root {
   --text-color: light-dark(#111, #ddd);
+  --text-color-secondary: light-dark(#aaa, #888);
 
   --background-primary: light-dark(#ccc, #444);
   --background-primary-highlight-weak: light-dark(#bbb, #555);

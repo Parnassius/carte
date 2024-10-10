@@ -21,15 +21,18 @@
   }
 
   div {
+    /* WIDE LANDSCAPE: the hand/playing-area cards are centered around the
+     * center of the screen; it's wide enough to have 7-wrapped playing area
+     * (so at most 2 rows) and the vertical size of the cards can be increased) */
     --unit: min(
       calc(
         100dvw /
         (
           var(--card-height-raw) +
           var(--card-width-raw) *
-          6 +
+          7 +
           var(--gap-raw) *
-          8 +
+          9 +
           var(--deck-shadow-max-width-raw)
         )
       ),
@@ -46,25 +49,22 @@
       )
     );
 
+    --center-x: calc(50dvw - var(--card-width) / 2);
+    --playing-area-wrap: 7;
+
     /* PORTRAIT OR SQUARISH ASPECT RATIO: the cards are centered around the
      * "leftover" space from the points decks and the playing area wraps with
      * a width of 6 (like the hands) */
-    --center-x: calc(50dvw + (var(--left) + var(--card-height) - var(--card-width)) / 2);
-    --playing-area-wrap: 6;
-
-    /* WIDE LANDSCAPE: the hand/playing-area cards are centered around the
-     * center of the screen; it's wide enough to have 7-wrapped playing area
-     * (so at most 2 rows) and the vertical size of the cards can be increased) */
-    @media (min-aspect-ratio: 1.5) {
+    @media (aspect-ratio < 1.5) {
       --unit: min(
         calc(
           100dvw /
           (
             var(--card-height-raw) +
             var(--card-width-raw) *
-            7 +
+            6 +
             var(--gap-raw) *
-            9 +
+            8 +
             var(--deck-shadow-max-width-raw)
           )
         ),
@@ -81,8 +81,12 @@
         )
       );
 
-      --center-x: calc(50dvw - var(--card-width) / 2);
-      --playing-area-wrap: 7;
+      --center-x: calc(
+        50dvw +
+        (var(--left) + var(--card-height) - var(--card-width)) /
+        2
+      );
+      --playing-area-wrap: 6;
     }
 
     --card-starting-y: var(--center-y);
@@ -101,7 +105,7 @@
       &[data-position="playing-area"] {
         --selected-card-offset: 0;
 
-        /* is 0 for a --card-field-position in the last row, 1 for any previous row */
+        /* is 0 for a --card-field-position in the last row, -1 for any previous row */
         /* the outermost round(down, ...) function can effectively be replaced by sign(...), as soon as it's supproted in chrome */
         --selector: round(
           down,
@@ -220,7 +224,7 @@
         font-weight: normal;
         font-size: 0.9em;
         line-height: 1.5em;
-        color: var(--background-primary-highlight-strong);
+        color: var(--text-color-secondary);
         padding-left: 1em;
         border-left: 1px solid var(--background-secondary-highlight-strong);
         &.winner {

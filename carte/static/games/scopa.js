@@ -266,11 +266,11 @@ class Scopa extends BaseGame {
       playerCell.textContent = playerName;
 
       const pointsCell = row.insertCell();
-      pointsCell.dataset.points = "";
+      pointsCell.classList.add("points");
 
       // details cell, with 5 divs inside for carte/denari/primiera/settebello/scope
       const detailsCell = row.insertCell();
-      detailsCell.dataset.details = "";
+      detailsCell.classList.add("details");
       for (let i = 0; i < 5; i++) {
         const div = document.createElement("div");
         detailsCell.append(div);
@@ -323,10 +323,10 @@ class Scopa extends BaseGame {
 
       if (type !== "scopa") {
         if (value > Number.parseInt(args[1 - playerId])) {
-          detailDiv.dataset.winner = "";
+          detailDiv.classList.add("winner");
         }
       } else if (value > 0) {
-        detailDiv.dataset.winner = "";
+        detailDiv.classList.add("winner");
       }
     }
   }
@@ -343,7 +343,7 @@ class Scopa extends BaseGame {
       // the row gets appended to the end to guarantee the correct order, so the
       // first row should be updated every time
       const row = rows[playerId];
-      const cell = row.querySelector("td[data-points]");
+      const cell = row.querySelector("td.points");
       cell.textContent = points;
 
       table.appendChild(row);
