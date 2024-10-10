@@ -62,9 +62,9 @@
           (
             var(--card-height-raw) +
             var(--card-width-raw) *
-            8 +
+            7 +
             var(--gap-raw) *
-            10 +
+            9 +
             var(--deck-shadow-max-width-raw)
           )
         ),
