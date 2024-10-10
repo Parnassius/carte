@@ -222,7 +222,7 @@
         line-height: 1.5em;
         color: var(--background-primary-highlight-strong);
         padding-left: 1em;
-        border-left: 1px solid var(--background-primary-highlight-strong);
+        border-left: 1px solid var(--background-secondary-highlight-strong);
         &.winner {
           color: var(--text-color);
         }
