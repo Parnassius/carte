@@ -10,13 +10,9 @@
       --active-card-offset: 0.25;
     }
     /* TAKEABLE CARDS */
-    &[data-playing] .card[data-position="playing-area"] {
-      &[data-takeable],
-      &[data-selected] {
-        &::after {
-          display: block;
-        }
-      }
+    &[data-playing]
+      .card[data-position="playing-area"]:is([data-takeable], [data-selected])::after {
+      display: block;
     }
     /* SELECTED CARDS */
     & .card[data-position="playing-area"][data-selected] {
