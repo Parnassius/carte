@@ -88,7 +88,7 @@
         &[data-deck-count="0"] {
           visibility: hidden;
         }
-        &:not([data-deck-capped])[data-deck-count]:hover {
+        &[data-deck-count]:not([data-deck-capped]):hover {
           --card-border-color: #bbb;
           --deck-shadow-color: #999;
           display: flex;
