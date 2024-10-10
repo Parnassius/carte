@@ -194,7 +194,7 @@
           --card-rotation: 2; /* upside down */
         }
         &[data-player="self"] {
-          top: calc(var(--bottom));
+          top: calc(var(--bottom) - var(--deck-shadow-width));
         }
       }
     }
