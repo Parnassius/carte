@@ -107,7 +107,7 @@ class Deck extends CardGroup {
     }
 
     if (this.capped) {
-      deckParams.set("deckCapped", this.capped);
+      deckParams.set("deckCapped", "");
     }
 
     this.game.createCard(deckParams);
