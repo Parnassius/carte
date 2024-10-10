@@ -230,7 +230,6 @@
         &[data-winner] {
           color: var(--text-color);
         }
-
         &[data-detail-type="primiera"] > span {
           font-family: monospace;
         }
