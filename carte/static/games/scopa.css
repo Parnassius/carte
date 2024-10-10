@@ -216,7 +216,6 @@
     td.details {
       padding-top: 0.5em;
       padding-bottom: 0.5em;
-
       > div[data-detail-type] {
         font-weight: normal;
         font-size: 0.9em;
