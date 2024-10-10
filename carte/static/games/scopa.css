@@ -226,7 +226,6 @@
 
         padding-left: 1em;
         border-left: 1px solid var(--background-primary-highlight-strong);
-
         &[data-winner] {
           color: var(--text-color);
         }
