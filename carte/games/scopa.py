@@ -400,6 +400,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             scores.append(0)
             for suit in Suit:
                 suit_cards = [card for card in player.points if card.suit == suit]
+                card = None
                 card_score = 0
                 if suit_cards:
                     card = max(
@@ -407,8 +408,6 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
                         key=lambda card: self._primiera_card_values[card.number],
                     )
                     card_score = self._primiera_card_values[card.number]
-                else:
-                    card = None
 
                 scores[-1] += card_score
                 card_numbers[-1].append(str(card.number) if card is not None else "0")
