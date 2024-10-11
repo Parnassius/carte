@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import random
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import pytest
 import pytest_asyncio
 from aiohttp import web
 
-from carte.games import BaseGame, Briscola
-from carte.games.base import Player
+from carte.games import BaseGame, Briscola, Scopa
 
-T_BaseGame = TypeVar("T_BaseGame", bound=BaseGame[Player])
+T_BaseGame = TypeVar("T_BaseGame", bound=BaseGame[Any])
 
 
 class DummyWebsocketResponse(web.WebSocketResponse):
@@ -25,7 +24,9 @@ class DummyWebsocketResponse(web.WebSocketResponse):
         self._messages.append(data)
 
     def _get_message(self, cmd: str) -> list[str]:
-        return next(x.split("|") for x in self._messages if x.startswith(f"{cmd}|"))
+        return next(
+            x.split("|") for x in reversed(self._messages) if x.startswith(f"{cmd}|")
+        )
 
 
 Game = tuple[T_BaseGame, list[DummyWebsocketResponse]]
@@ -49,6 +50,11 @@ def make_game(game_type: type[T_BaseGame]) -> Game[T_BaseGame]:
 @pytest.fixture
 def briscola() -> Game[Briscola]:
     return make_game(Briscola)
+
+
+@pytest.fixture
+def scopa() -> Game[Scopa]:
+    return make_game(Scopa)
 
 
 @pytest.fixture(autouse=True)
