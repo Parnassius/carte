@@ -106,7 +106,6 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         # set the correct turn
         if ws_player and self._players.index(ws_player) == self._current_player_id:
-
             yield ["turn"]
 
     async def _prepare_start(self) -> None:
