@@ -194,7 +194,7 @@ class Scopa extends BaseGame {
     // move the card in hand to either the scopa count or the points deck
     const handCardField = this.cardFields.get("hand").select("player", player);
     const dest = (
-      Number(isScopa) > 0
+      Number.parseInt(isScopa) > 0
         ? this.cardFields.get("points-scopa")
         : this.decks.get("points")
     ).select("player", player);
