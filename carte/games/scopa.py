@@ -180,7 +180,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
     @cmd(game_status=GameStatus.STARTED, current_player=True)
     async def cmd_take_choice(self, card: Card) -> None:
         # wrong playing status
-        if self._playing_status != ScopaPlayingStatus.CAPTURE:
+        if self._playing_status is not ScopaPlayingStatus.CAPTURE:
             msg = "You can't take a card now"
             raise CmdError(msg)
 
