@@ -12,7 +12,6 @@ from carte.types import Card, CardNumber, GameStatus, Suit
 class ScopaPlayingStatus(StrEnum):
     HAND = auto()
     CAPTURE = auto()
-    TURN_FINISHED = auto()
 
 
 class ScopaPlayer(Player):
@@ -150,7 +149,9 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             self.current_player.hand.remove(card)
             self._table.append(card)
 
-            self._playing_status = ScopaPlayingStatus.TURN_FINISHED
+            finished = await self._finish_turn()
+            if finished:
+                return
         # some cards can be taken: change to the capture status and offer to take them
         else:
             self._active_card = card
@@ -163,12 +164,6 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             )
 
             self._playing_status = ScopaPlayingStatus.CAPTURE
-
-        # if the turn is finished
-        if self._playing_status == ScopaPlayingStatus.TURN_FINISHED:
-            finished = await self._finish_turn()
-            if finished:
-                return
 
         await self._send("turn_status", self._playing_status)
 
