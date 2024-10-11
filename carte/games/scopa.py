@@ -268,8 +268,6 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
                 await self._send("results_prepare")
 
-                results = [0 for _ in self._players]
-
                 # await, because each function sends a "results_detail" message
                 cards_winner = await self._results_cards()
                 denari_winner = await self._results_denari()
