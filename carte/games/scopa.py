@@ -202,7 +202,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         # check if the sum is complete
         selected_sum = sum(self._card_values[c.number] for c in self._selected_cards)
 
-        # stil send it, even if it is complete, to update the view
+        # still send it, even if it is complete, to update the view
         # incomplete sum: recalculate the takeable cards, excuding the cards
         # that have already been taken
         new_takeable_cards = self._calculate_takeable(
