@@ -136,7 +136,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
     @cmd(game_status=GameStatus.STARTED, current_player=True)
     async def cmd_play(self, card: Card) -> None:
         # wrong playing status
-        if self._playing_status != ScopaPlayingStatus.HAND:
+        if self._playing_status is not ScopaPlayingStatus.HAND:
             msg = "You can't play a card now"
             raise CmdError(msg)
         # card not in hand
