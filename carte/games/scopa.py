@@ -94,15 +94,12 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         yield ["deck_count", "deck", len(self._deck)]
 
         yield ["turn_status", self._playing_status]
-        match self._playing_status:
-            case ScopaPlayingStatus.HAND:
-                pass
-            case ScopaPlayingStatus.CAPTURE:
-                yield ["activate_card", self._current_player_id, self._active_card]
-                if self.current_player == ws_player:
-                    yield ["capture_takeable_cards", *self._takeable_cards]
+        if self._playing_status is ScopaPlayingStatus.CAPTURE:
+            yield ["activate_card", self._current_player_id, self._active_card]
+            if self.current_player == ws_player:
+                yield ["capture_takeable_cards", *self._takeable_cards]
 
-                yield ["capture_selected_cards", *self._selected_cards]
+            yield ["capture_selected_cards", *self._selected_cards]
 
         # set the correct turn
         if ws_player and self._players.index(ws_player) == self._current_player_id:
