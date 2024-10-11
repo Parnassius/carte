@@ -255,7 +255,6 @@ class Scopa extends BaseGame {
 
   cmdResultsPrepare() {
     const table = document.getElementById("results-table");
-    table.classList.add("contracted");
 
     for (const [playerId, playerName] of this.players.entries()) {
       const row = table.insertRow();
