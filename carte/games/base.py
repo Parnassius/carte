@@ -5,6 +5,7 @@ import itertools
 import random
 import types
 from collections.abc import Callable, Iterable, Iterator
+from enum import Enum
 from typing import (
     Any,
     ClassVar,
@@ -25,7 +26,7 @@ from carte.types import Card, CardNumber, CmdFunc, Command, GameStatus, Suit
 
 
 def cmd(
-    *, current_player: bool = False, **kwargs: Any
+    *, current_player: bool = False, **kwargs: Enum
 ) -> Callable[[CmdFunc], Command[CmdFunc]]:
     def decorator(func: CmdFunc) -> Command[CmdFunc]:
         return Command(func, current_player, kwargs)

@@ -56,7 +56,7 @@ CmdFunc = TypeVar("CmdFunc", bound=Callable[..., Awaitable[None]])
 class Command(Generic[CmdFunc]):  # type: ignore[misc]
     func: CmdFunc
     current_player: bool
-    other_arguments: dict[str, Any]
+    other_arguments: dict[str, Enum]
 
     def check(self, game: BaseGame[Any], ws: web.WebSocketResponse) -> None:
         for name, value in self.other_arguments.items():
