@@ -60,12 +60,7 @@ class Command(Generic[CmdFunc]):  # type: ignore[misc]
 
     def check(self, game: BaseGame[Any], ws: web.WebSocketResponse) -> None:
         for name, value in self.other_arguments.items():
-            try:
-                attr = getattr(game, f"_{name}")
-            except AttributeError as e:
-                err = f"Non-existing attribute {name}"
-                raise CmdError(err) from e
-
+            attr = getattr(game, f"_{name}")
             if attr is not value:
                 err = f"Invalid {name.replace('_', ' ')}"
                 raise CmdError(err)
