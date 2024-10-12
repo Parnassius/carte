@@ -4,9 +4,13 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum, StrEnum, auto
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
+
+from carte.exc import CmdError
 
 if TYPE_CHECKING:
+    from aiohttp import web
+
     from carte.games.base import BaseGame, Player
 
 
@@ -51,8 +55,24 @@ CmdFunc = TypeVar("CmdFunc", bound=Callable[..., Awaitable[None]])
 @dataclass
 class Command(Generic[CmdFunc]):  # type: ignore[misc]
     func: CmdFunc
-    game_status: GameStatus | None
     current_player: bool
+    other_arguments: dict[str, Any]
+
+    def check(self, game: BaseGame[Any], ws: web.WebSocketResponse) -> None:
+        for name, value in self.other_arguments.items():
+            try:
+                attr = getattr(game, f"_{name}")
+            except AttributeError as e:
+                err = f"Non-existing attribute {name}"
+                raise CmdError(err) from e
+
+            if attr is not value:
+                err = f"Invalid {name.replace('_', ' ')}"
+                raise CmdError(err)
+
+        if self.current_player and ws not in game.current_player.websockets:
+            err = "It's not your turn"
+            raise CmdError(err)
 
 
 @dataclass

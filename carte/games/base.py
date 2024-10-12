@@ -25,10 +25,10 @@ from carte.types import Card, CardNumber, CmdFunc, Command, GameStatus, Suit
 
 
 def cmd(
-    *, game_status: GameStatus | None = None, current_player: bool = False
+    *, current_player: bool = False, **kwargs: Any
 ) -> Callable[[CmdFunc], Command[CmdFunc]]:
     def decorator(func: CmdFunc) -> Command[CmdFunc]:
-        return Command(func, game_status, current_player)
+        return Command(func, current_player, kwargs)
 
     return decorator
 
@@ -292,13 +292,8 @@ class BaseGame(Generic[T_Player]):
             err = f"Invalid command {raw_cmd}"
             raise CmdError(err) from e
 
-        if cmd.current_player and ws not in self.current_player.websockets:
-            msg = "It's not your turn"
-            raise CmdError(msg)
-
-        if cmd.game_status and cmd.game_status is not self._game_status:
-            msg = "Invalid game status"
-            raise CmdError(msg)
+        # cmd.check can raise a CmdError
+        cmd.check(self, ws)
 
         raw_args = iter(raw_args_tuple)
         params = get_type_hints(cmd.func)
