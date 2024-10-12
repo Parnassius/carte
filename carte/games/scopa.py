@@ -129,12 +129,12 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
                 player_id = (self._current_player_id + i) % self.number_of_players
                 await self._draw_card(self._players[player_id])
 
-    @cmd(game_status=GameStatus.STARTED, current_player=True)
+    @cmd(
+        current_player=True,
+        game_status=GameStatus.STARTED,
+        playing_status=ScopaPlayingStatus.HAND,
+    )
     async def cmd_play(self, card: Card) -> None:
-        # wrong playing status
-        if self._playing_status is not ScopaPlayingStatus.HAND:
-            msg = "You can't play a card now"
-            raise CmdError(msg)
         # card not in hand
         if card not in self.current_player.hand:
             msg = "You don't have that card"
@@ -169,13 +169,12 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         await self._send(self.current_player, "turn")
 
-    @cmd(game_status=GameStatus.STARTED, current_player=True)
+    @cmd(
+        current_player=True,
+        game_status=GameStatus.STARTED,
+        playing_status=ScopaPlayingStatus.CAPTURE,
+    )
     async def cmd_take_choice(self, card: Card) -> None:
-        # wrong playing status
-        if self._playing_status is not ScopaPlayingStatus.CAPTURE:
-            msg = "You can't take a card now"
-            raise CmdError(msg)
-
         # card not among the takeable ones
         if card not in self._takeable_cards and card not in self._selected_cards:
             msg = "You can't swap that card"

@@ -71,7 +71,7 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
         self._briscola_drawn = False
         await self._send("show_briscola", self._briscola)
 
-    @cmd(game_status=GameStatus.STARTED, current_player=True)
+    @cmd(current_player=True, game_status=GameStatus.STARTED)
     async def cmd_play(self, card: Card) -> None:
         try:
             self.current_player.hand.remove(card)
