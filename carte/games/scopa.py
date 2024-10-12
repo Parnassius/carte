@@ -135,10 +135,6 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         playing_status=ScopaPlayingStatus.HAND,
     )
     async def cmd_play(self, card: Card) -> None:
-        # wrong playing status
-        if self._playing_status is not ScopaPlayingStatus.HAND:
-            msg = "You can't play a card now"
-            raise CmdError(msg)
         # card not in hand
         if card not in self.current_player.hand:
             msg = "You don't have that card"
@@ -179,11 +175,6 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         playing_status=ScopaPlayingStatus.CAPTURE,
     )
     async def cmd_take_choice(self, card: Card) -> None:
-        # wrong playing status
-        if self._playing_status is not ScopaPlayingStatus.CAPTURE:
-            msg = "You can't take a card now"
-            raise CmdError(msg)
-
         # card not among the takeable ones
         if card not in self._takeable_cards and card not in self._selected_cards:
             msg = "You can't swap that card"

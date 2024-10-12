@@ -6,11 +6,11 @@ from datetime import UTC, datetime, timedelta
 from enum import Enum, StrEnum, auto
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
+from aiohttp import web
+
 from carte.exc import CmdError
 
 if TYPE_CHECKING:
-    from aiohttp import web
-
     from carte.games.base import BaseGame, Player
 
 
