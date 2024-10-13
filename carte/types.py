@@ -65,7 +65,7 @@ class Command(Generic[CmdFunc]):  # type: ignore[misc]
                 err = f"Invalid {name.replace('_', ' ')}"
                 raise CmdError(err)
 
-        if ws not in game.current_player.websockets:
+        if self.current_player and ws not in game.current_player.websockets:
             err = "It's not your turn"
             raise CmdError(err)
 
