@@ -61,7 +61,6 @@ class Player:
         self.websockets = WeakSet()
 
     def reset(self) -> None:
-        self.ready = False
         self.hand.clear()
         self.points.clear()
 
@@ -158,6 +157,9 @@ class BaseGame(Generic[T_Player]):
     def _board_state(self, ws_player: T_Player | None) -> Iterator[list[Any]]:
         raise NotImplementedError
 
+    def _results(self) -> Iterator[list[Any]]:
+        raise NotImplementedError
+
     async def _send_str(self, ws: web.WebSocketResponse, msg: str) -> None:
         try:
             await ws.send_str(msg)
@@ -220,23 +222,17 @@ class BaseGame(Generic[T_Player]):
         if player and self._game_status is not GameStatus.NOT_STARTED:
             await self._send(ws, "player_id", self._players.index(player))
 
-        if self._game_status is GameStatus.STARTED:
+        if self._game_status is not GameStatus.NOT_STARTED:
             await self._send(ws, "animations", "off")
             await self._send(ws, "begin")
             for args in self._board_state(player):
                 await self._send(ws, *args)
+            if self._game_status is GameStatus.ENDED:
+                for args in self._results():
+                    await self._send(ws, *args)
+                if player and player.ready:
+                    await self._send(ws, "rematch_active")
             await self._send(ws, "animations", "on")
-
-        elif self._game_status is GameStatus.ENDED and player:
-            await self.cmd_rematch.func(self, player)
-
-    async def _send_results(self, results: list[int]) -> None:
-        await self._send("results", *results)
-        self._starting_player_id = (
-            self._starting_player_id + 1
-        ) % self.number_of_players
-        for player in self._players:
-            player.reset()
 
     async def _prepare_start(self) -> None:
         self._deck = self._shuffle_deck()
@@ -253,6 +249,13 @@ class BaseGame(Generic[T_Player]):
 
     async def _start_game(self) -> None:
         raise NotImplementedError
+
+    async def _end_game(self) -> None:
+        self._game_status = GameStatus.ENDED
+        for args in self._results():
+            await self._send(*args)
+        for player in self._players:
+            player.ready = False
 
     async def _draw_card(self, player: T_Player) -> None:
         card = self._deck.pop()
@@ -370,4 +373,9 @@ class BaseGame(Generic[T_Player]):
     async def cmd_rematch(self, player: T_Player) -> None:
         player.ready = True
         if all(x.ready for x in self._players):
+            self._starting_player_id = (
+                self._starting_player_id + 1
+            ) % self.number_of_players
+            for player in self._players:
+                player.reset()
             await self._prepare_start()

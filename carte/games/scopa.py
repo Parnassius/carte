@@ -104,6 +104,32 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         if ws_player and self._players.index(ws_player) == self._current_player_id:
             yield ["turn"]
 
+    def _results(self) -> Iterator[list[Any]]:
+        yield ["results_prepare"]
+
+        cards_winner, cards_detail = self._results_cards()
+        denari_winner, denari_detail = self._results_denari()
+        primiera_winner, primiera_detail = self._results_primiera()
+        settebello_winner, settebello_detail = self._results_settebello()
+
+        yield from (cards_detail, denari_detail, primiera_detail, settebello_detail)
+
+        scopa_points = tuple(len(player.scopa_cards) for player in self._players)
+        yield ["results_detail", "scopa", *scopa_points]
+        results = [
+            sum(t)
+            for t in zip(
+                scopa_points,
+                cards_winner,
+                denari_winner,
+                primiera_winner,
+                settebello_winner,
+                strict=True,
+            )
+        ]
+
+        yield ["results", *results]
+
     async def _prepare_start(self) -> None:
         self._table = []
         self._playing_status = ScopaPlayingStatus.HAND
@@ -255,33 +281,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
                     self._players[self._last_taker_id].points.extend(self._table)
                     self._table.clear()
 
-                self._game_status = GameStatus.ENDED
-
-                await self._send("results_prepare")
-
-                # await, because each function sends a "results_detail" message
-                cards_winner = await self._results_cards()
-                denari_winner = await self._results_denari()
-                primiera_winner = await self._results_primiera()
-                settebello_winner = await self._results_settebello()
-
-                scopa_points = tuple(
-                    len(player.scopa_cards) for player in self._players
-                )
-                await self._send("results_detail", "scopa", *scopa_points)
-                results = [
-                    sum(t)
-                    for t in zip(
-                        scopa_points,
-                        cards_winner,
-                        denari_winner,
-                        primiera_winner,
-                        settebello_winner,
-                        strict=True,
-                    )
-                ]
-
-                await self._send_results(results)
+                await self._end_game()
                 return True
 
         self._playing_status = ScopaPlayingStatus.HAND
@@ -349,14 +349,16 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         return sorted(out)
 
-    # all of the _results_*() functions send a results_detail message (and thus
-    # are async), detailing the information to be shown in the details section
-    # in the results table. they return a list containing the points that each
-    # "category" assigns to each player.
-    async def _results_cards(self) -> list[int]:
+    # all of the _results_*() functions return a 2-element tuple.
+    # the first element is a list containing the points that each "category" assigns to
+    # each player.
+    # the second element is a results_detail message that is then yielded by the results
+    # iterator, detailing the information to be shown in the details section in the
+    # results table.
+    def _results_cards(self) -> tuple[list[int], list[Any]]:
         scores = [len(player.points) for player in self._players]
 
-        await self._send("results_detail", "cards", *scores)
+        details = ["results_detail", "cards", *scores]
 
         max_value = max(scores)
         results = [0 for _ in self._players]
@@ -364,15 +366,15 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             winner = scores.index(max_value)
             results[winner] += 1
 
-        return results
+        return results, details
 
-    async def _results_denari(self) -> list[int]:
+    def _results_denari(self) -> tuple[list[int], list[Any]]:
         scores = [
             sum(1 for c in player.points if c.suit == Suit.DENARI)
             for player in self._players
         ]
 
-        await self._send("results_detail", "denari", *scores)
+        details = ["results_detail", "denari", *scores]
 
         max_value = max(scores)
         results = [0 for _ in self._players]
@@ -380,9 +382,9 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             winner = scores.index(max_value)
             results[winner] += 1
 
-        return results
+        return results, details
 
-    async def _results_primiera(self) -> list[int]:
+    def _results_primiera(self) -> tuple[list[int], list[Any]]:
         card_numbers: list[list[str]] = []
         scores = []
 
@@ -408,7 +410,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             primiera_cards.append(str(suit))
             primiera_cards.extend(cn[i] for cn in card_numbers)
 
-        await self._send("results_detail", "primiera", *scores, *primiera_cards)
+        details = ["results_detail", "primiera", *scores, *primiera_cards]
 
         sorted_scores = sorted(scores, reverse=True)
         max_value = sorted_scores[0]
@@ -418,13 +420,13 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             winner = scores.index(max_value)
             results[winner] += 1
 
-        return results
+        return results, details
 
-    async def _results_settebello(self) -> list[int]:
+    def _results_settebello(self) -> tuple[list[int], list[Any]]:
         out = [
             1 if Card(suit=Suit.DENARI, number=CardNumber.SETTE) in player.points else 0
             for player in self._players
         ]
-        await self._send("results_detail", "settebello", *out)
+        details = ["results_detail", "settebello", *out]
 
-        return out
+        return out, details

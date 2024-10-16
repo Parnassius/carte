@@ -709,6 +709,10 @@ class BaseGame {
     document.getElementById("results").showPopover();
   }
 
+  cmdRematchActive() {
+    document.getElementById("results-rematch").classList.add("loading");
+  }
+
   camelToKebab(str) {
     return str.replaceAll(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
   }

@@ -30,7 +30,6 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
         self._played_cards: dict[Player, Card] = {}
 
     def _board_state(self, ws_player: Player | None) -> Iterator[list[Any]]:
-
         for player_id, player in enumerate(self._players):
             for card in player.hand:
                 if player == ws_player:
@@ -57,6 +56,15 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
 
         if ws_player and self._players.index(ws_player) == self._current_player_id:
             yield ["turn"]
+
+    def _results(self) -> Iterator[list[Any]]:
+        results = []
+        for results_player in self._players:
+            points = 0
+            for card in results_player.points:
+                points += self._card_points[card.number]
+            results.append(points)
+        yield ["results", *results]
 
     async def _start_game(self) -> None:
         for _ in range(self.hand_size):
@@ -120,14 +128,7 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
                         await self._send("draw_briscola", self._players.index(player))
 
             elif all(not player.hand for player in self._players):
-                self._game_status = GameStatus.ENDED
-                results = []
-                for results_player in self._players:
-                    points = 0
-                    for card in results_player.points:
-                        points += self._card_points[card.number]
-                    results.append(points)
-                await self._send_results(results)
+                await self._end_game()
                 return
 
         else:
