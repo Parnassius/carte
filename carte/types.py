@@ -83,3 +83,6 @@ class SavedGame:
         if self.version != type(self.game).version:
             return False
         return True
+
+
+Sendable = str | int | Card

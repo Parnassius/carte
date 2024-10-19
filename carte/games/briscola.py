@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Any
 
 from carte.exc import CmdError
 from carte.games.base import BaseGame, Player, cmd
-from carte.types import Card, CardNumber, GameStatus
+from carte.types import Card, CardNumber, GameStatus, Sendable
 
 
 class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
@@ -29,7 +28,7 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
         self._briscola_drawn = False
         self._played_cards: dict[Player, Card] = {}
 
-    def _board_state(self, ws_player: Player | None) -> Iterator[list[Any]]:
+    def _board_state(self, ws_player: Player | None) -> Iterator[list[Sendable]]:
         for player_id, player in enumerate(self._players):
             for card in player.hand:
                 if player == ws_player:
@@ -57,7 +56,7 @@ class Briscola(BaseGame[Player], version=1, number_of_players=2, hand_size=3):
         if ws_player and self._players.index(ws_player) == self._current_player_id:
             yield ["turn"]
 
-    def _results(self) -> Iterator[list[Any]]:
+    def _results(self) -> Iterator[list[Sendable]]:
         results = []
         for results_player in self._players:
             points = 0

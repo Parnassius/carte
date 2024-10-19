@@ -22,7 +22,7 @@ import aiohttp
 from aiohttp import web
 
 from carte.exc import CmdError
-from carte.types import Card, CardNumber, CmdFunc, Command, GameStatus, Suit
+from carte.types import Card, CardNumber, CmdFunc, Command, GameStatus, Sendable, Suit
 
 
 def cmd(
@@ -154,10 +154,10 @@ class BaseGame(Generic[T_Player]):
     def current_player(self) -> T_Player:
         return self._players[self._current_player_id]
 
-    def _board_state(self, ws_player: T_Player | None) -> Iterator[list[Any]]:
+    def _board_state(self, ws_player: T_Player | None) -> Iterator[list[Sendable]]:
         raise NotImplementedError
 
-    def _results(self) -> Iterator[list[Any]]:
+    def _results(self) -> Iterator[list[Sendable]]:
         raise NotImplementedError
 
     async def _send_str(self, ws: web.WebSocketResponse, msg: str) -> None:
@@ -170,21 +170,21 @@ class BaseGame(Generic[T_Player]):
     async def _send(
         self,
         maybe_player_or_ws: T_Player | web.WebSocketResponse,
-        *args: str | int | Card,
+        *args: Sendable,
     ) -> None: ...
 
     @overload
     async def _send(
         self,
-        maybe_player_or_ws: str | int | Card,
-        *args: str | int | Card,
+        maybe_player_or_ws: Sendable,
+        *args: Sendable,
         websockets: Iterable[web.WebSocketResponse] | None = ...,
     ) -> None: ...
 
     async def _send(
         self,
-        maybe_player_or_ws: T_Player | web.WebSocketResponse | str | int | Card,
-        *args: str | int | Card,
+        maybe_player_or_ws: T_Player | web.WebSocketResponse | Sendable,
+        *args: Sendable,
         websockets: Iterable[web.WebSocketResponse] | None = None,
     ) -> None:
         if isinstance(maybe_player_or_ws, Player):
@@ -204,7 +204,7 @@ class BaseGame(Generic[T_Player]):
                     tg.create_task(self._send_str(ws, msg))
 
     async def _send_others(
-        self, player_or_ws: T_Player | web.WebSocketResponse, *args: Any
+        self, player_or_ws: T_Player | web.WebSocketResponse, *args: Sendable
     ) -> None:
         websockets = (
             player_or_ws.websockets

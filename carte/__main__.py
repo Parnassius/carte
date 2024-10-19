@@ -4,7 +4,6 @@ import asyncio
 import shelve
 import urllib.parse
 from pathlib import Path
-from typing import Any
 from weakref import WeakSet, WeakValueDictionary
 
 import aiohttp
@@ -18,7 +17,7 @@ from carte.games import BaseGame
 from carte.routes import routes
 
 
-async def cookie_ctx_processor(request: web.Request) -> dict[str, Any]:
+async def cookie_ctx_processor(request: web.Request) -> dict[str, str]:
     defaults = {
         "card_type": "piacentine",
         "theme": "theme-system",

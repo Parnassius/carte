@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from enum import StrEnum, auto
-from typing import Any
 
 from carte.exc import CmdError
 from carte.games.base import BaseGame, Player, cmd
-from carte.types import Card, CardNumber, GameStatus, Suit
+from carte.types import Card, CardNumber, GameStatus, Sendable, Suit
 
 
 class ScopaPlayingStatus(StrEnum):
@@ -63,7 +62,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         self._takeable_cards: list[Card] = []
         self._selected_cards: list[Card] = []
 
-    def _board_state(self, ws_player: ScopaPlayer | None) -> Iterator[list[Any]]:
+    def _board_state(self, ws_player: ScopaPlayer | None) -> Iterator[list[Sendable]]:
         # draw cards
         for player_id, player in enumerate(self._players):
             for card in player.hand:
@@ -104,7 +103,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
         if ws_player and self._players.index(ws_player) == self._current_player_id:
             yield ["turn"]
 
-    def _results(self) -> Iterator[list[Any]]:
+    def _results(self) -> Iterator[list[Sendable]]:
         yield ["results_prepare"]
 
         cards_winner, cards_detail = self._results_cards()
@@ -355,10 +354,10 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
     # the second element is a results_detail message that is then yielded by the results
     # iterator, detailing the information to be shown in the details section in the
     # results table.
-    def _results_cards(self) -> tuple[list[int], list[Any]]:
+    def _results_cards(self) -> tuple[list[int], list[Sendable]]:
         scores = [len(player.points) for player in self._players]
 
-        details = ["results_detail", "cards", *scores]
+        details: list[Sendable] = ["results_detail", "cards", *scores]
 
         max_value = max(scores)
         results = [0 for _ in self._players]
@@ -368,13 +367,13 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         return results, details
 
-    def _results_denari(self) -> tuple[list[int], list[Any]]:
+    def _results_denari(self) -> tuple[list[int], list[Sendable]]:
         scores = [
             sum(1 for c in player.points if c.suit == Suit.DENARI)
             for player in self._players
         ]
 
-        details = ["results_detail", "denari", *scores]
+        details: list[Sendable] = ["results_detail", "denari", *scores]
 
         max_value = max(scores)
         results = [0 for _ in self._players]
@@ -384,7 +383,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         return results, details
 
-    def _results_primiera(self) -> tuple[list[int], list[Any]]:
+    def _results_primiera(self) -> tuple[list[int], list[Sendable]]:
         card_numbers: list[list[str]] = []
         scores = []
 
@@ -410,7 +409,12 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
             primiera_cards.append(str(suit))
             primiera_cards.extend(cn[i] for cn in card_numbers)
 
-        details = ["results_detail", "primiera", *scores, *primiera_cards]
+        details: list[Sendable] = [
+            "results_detail",
+            "primiera",
+            *scores,
+            *primiera_cards,
+        ]
 
         sorted_scores = sorted(scores, reverse=True)
         max_value = sorted_scores[0]
@@ -422,11 +426,11 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
 
         return results, details
 
-    def _results_settebello(self) -> tuple[list[int], list[Any]]:
+    def _results_settebello(self) -> tuple[list[int], list[Sendable]]:
         out = [
             1 if Card(suit=Suit.DENARI, number=CardNumber.SETTE) in player.points else 0
             for player in self._players
         ]
-        details = ["results_detail", "settebello", *out]
+        details: list[Sendable] = ["results_detail", "settebello", *out]
 
         return out, details
