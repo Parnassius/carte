@@ -142,7 +142,7 @@ class BaseGame(Generic[T_Player]):
             self._players.append(player)
             if (
                 len(self._players) >= self.number_of_players
-                and self.WAITING_GAMES_IDS[type(self)] == self._game_id
+                and self.WAITING_GAMES_IDS.get(type(self)) == self._game_id
             ):
                 del self.WAITING_GAMES_IDS[type(self)]
         else:
