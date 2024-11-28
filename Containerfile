@@ -31,7 +31,7 @@ RUN apk add --no-cache nodejs npm
 RUN /opt/poetry-venv/bin/poetry install --no-interaction --no-root
 RUN npm ci
 
-RUN /opt/poetry-venv/bin/poetry run poe black --check
+RUN /opt/poetry-venv/bin/poetry run poe ruff-format --check
 RUN /opt/poetry-venv/bin/poetry run poe prettier-check
 RUN /opt/poetry-venv/bin/poetry run poe mypy
 RUN /opt/poetry-venv/bin/poetry run poe ruff

@@ -17,12 +17,12 @@ warn_unreachable = true
 
 
 [tool.poe.tasks]
-ruff-fix = "ruff check carte tests --fix-only --exit-zero"
-black = "black carte tests"
+ruff-fix = "ruff check carte tests --fix-only"
+ruff-format = "ruff format carte tests"
 prettier = "npx --no prettier carte/templates --write"
 prettier-check = "npx --no prettier carte/templates --check"
 biome-fix = "npx --no @biomejs/biome check carte --write"
-format = ["ruff-fix", "black", "prettier", "biome-fix"]
+format = ["ruff-fix", "ruff-format", "prettier", "biome-fix"]
 
 mypy = "mypy carte tests"
 ruff = "ruff check carte tests"
@@ -44,7 +44,6 @@ aiohttp-jinja2 = "1.6"
 typenv = "0.2.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "24.10.0"
 mypy = "1.13.0"
 poethepoet = "0.29.0"
 pytest = "8.3.3"

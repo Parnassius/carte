@@ -19,7 +19,9 @@ class DummyWebsocketResponse(web.WebSocketResponse):
         self._messages: list[str] = []
 
     async def send_str(
-        self, data: str, compress: int | None = None  # noqa: ARG002
+        self,
+        data: str,
+        compress: int | None = None,  # noqa: ARG002
     ) -> None:
         self._messages.append(data)
 

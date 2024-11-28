@@ -48,7 +48,8 @@ async def cleanup_saved_games(app: web.Application) -> None:
 
 
 async def add_headers(
-    request: web.Request, response: web.StreamResponse  # noqa: ARG001
+    request: web.Request,  # noqa: ARG001
+    response: web.StreamResponse,
 ) -> None:
     response.headers["Content-Security-Policy"] = (
         "default-src 'none'; "
