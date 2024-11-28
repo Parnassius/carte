@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import itertools
 import random
@@ -69,8 +67,8 @@ T_Player = TypeVar("T_Player", bound=Player)
 
 
 class BaseGame(Generic[T_Player]):
-    GAMES: ClassVar[dict[str, type[BaseGame[Any]]]] = {}
-    WAITING_GAMES_IDS: ClassVar[dict[type[BaseGame[Any]], str]] = {}
+    GAMES: ClassVar[dict[str, type["BaseGame[Any]"]]] = {}
+    WAITING_GAMES_IDS: ClassVar[dict[type["BaseGame[Any]"], str]] = {}
 
     player_class: type[T_Player]
     version: int

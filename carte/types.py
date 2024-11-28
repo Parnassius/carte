@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -58,7 +56,7 @@ class Command(Generic[CmdFunc]):  # type: ignore[misc]
     current_player: bool
     other_arguments: dict[str, Enum]
 
-    def check(self, game: BaseGame[Any], ws: web.WebSocketResponse) -> None:
+    def check(self, game: "BaseGame[Any]", ws: web.WebSocketResponse) -> None:
         for name, value in self.other_arguments.items():
             attr = getattr(game, f"_{name}")
             if attr is not value:
@@ -72,7 +70,7 @@ class Command(Generic[CmdFunc]):  # type: ignore[misc]
 
 @dataclass
 class SavedGame:
-    game: BaseGame[Player]
+    game: "BaseGame[Player]"
     version: int
     last_saved: datetime = field(default_factory=lambda: datetime.now(UTC), init=False)
 
