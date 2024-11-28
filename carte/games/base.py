@@ -4,16 +4,7 @@ import random
 import types
 from collections.abc import Callable, Iterable, Iterator
 from enum import Enum
-from typing import (
-    Any,
-    ClassVar,
-    Generic,
-    TypeVar,
-    get_args,
-    get_origin,
-    get_type_hints,
-    overload,
-)
+from typing import Any, ClassVar, get_args, get_origin, get_type_hints, overload
 from weakref import WeakSet
 
 import aiohttp
@@ -23,10 +14,10 @@ from carte.exc import CmdError
 from carte.types import Card, CardNumber, CmdFunc, Command, GameStatus, Sendable, Suit
 
 
-def cmd(
+def cmd[F: CmdFunc[...]](
     *, current_player: bool = False, **kwargs: Enum
-) -> Callable[[CmdFunc], Command[CmdFunc]]:
-    def decorator(func: CmdFunc) -> Command[CmdFunc]:
+) -> Callable[[F], Command[F]]:
+    def decorator(func: F) -> Command[F]:
         return Command(func, current_player, kwargs)
 
     return decorator
@@ -63,10 +54,7 @@ class Player:
         self.points.clear()
 
 
-T_Player = TypeVar("T_Player", bound=Player)
-
-
-class BaseGame(Generic[T_Player]):
+class BaseGame[T_Player: Player]:
     GAMES: ClassVar[dict[str, type["BaseGame[Any]"]]] = {}
     WAITING_GAMES_IDS: ClassVar[dict[type["BaseGame[Any]"], str]] = {}
 

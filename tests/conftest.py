@@ -1,13 +1,11 @@
 import random
-from typing import Any, TypeVar
+from typing import Any
 
 import pytest
 import pytest_asyncio
 from aiohttp import web
 
 from carte.games import BaseGame, Briscola, Scopa
-
-T_BaseGame = TypeVar("T_BaseGame", bound=BaseGame[Any])
 
 
 class DummyWebsocketResponse(web.WebSocketResponse):
@@ -29,10 +27,10 @@ class DummyWebsocketResponse(web.WebSocketResponse):
         )
 
 
-Game = tuple[T_BaseGame, list[DummyWebsocketResponse]]
+type Game[T: BaseGame[Any]] = tuple[T, list[DummyWebsocketResponse]]
 
 
-def make_game(game_type: type[T_BaseGame]) -> Game[T_BaseGame]:
+def make_game[T: BaseGame[Any]](game_type: type[T]) -> Game[T]:
     game = game_type("")
     websockets = []
 

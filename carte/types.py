@@ -2,7 +2,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum, StrEnum, auto
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any
 
 from aiohttp import web
 
@@ -47,12 +47,12 @@ class Card:
         return f"{self.suit}:{self.number}"
 
 
-CmdFunc = TypeVar("CmdFunc", bound=Callable[..., Awaitable[None]])
+type CmdFunc[**P] = Callable[P, Awaitable[None]]
 
 
 @dataclass
-class Command(Generic[CmdFunc]):  # type: ignore[misc]
-    func: CmdFunc
+class Command[F: CmdFunc[...]]:  # type: ignore[misc]
+    func: F
     current_player: bool
     other_arguments: dict[str, Enum]
 
