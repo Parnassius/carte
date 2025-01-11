@@ -1,4 +1,10 @@
 __pycache__
-/games
+*.py[oc]
+build
+dist
+wheels
+*.egg-info
+.venv
 /node_modules
-/.env
+.env
+/games

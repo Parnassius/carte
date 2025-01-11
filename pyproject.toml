@@ -1,6 +1,27 @@
+[project]
+name = "carte"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp==3.11.11",
+    "aiohttp-jinja2==1.6",
+    "typenv==0.2.0",
+]
+
+[project.scripts]
+carte = "carte.__main__:main"
+
+[dependency-groups]
+dev = [
+    "mypy==1.14.1",
+    "pytest==8.3.4",
+    "pytest-asyncio==0.25.0",
+    "ruff==0.8.4",
+]
+
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 
 [tool.mypy]
@@ -16,46 +37,11 @@ disallow_any_decorated = true
 warn_unreachable = true
 
 
-[tool.poe.tasks]
-ruff-fix = "ruff check src tests --fix-only"
-ruff-format = "ruff format src tests"
-prettier = "npx --no prettier src/carte/templates --write"
-prettier-check = "npx --no prettier src/carte/templates --check"
-biome-fix = "npx --no @biomejs/biome check src --write"
-format = ["ruff-fix", "ruff-format", "prettier", "biome-fix"]
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers"
+asyncio_mode = "auto"
+xfail_strict = true
 
-mypy = "mypy src tests"
-ruff = "ruff check src tests"
-biome = "npx --no @biomejs/biome ci --error-on-warnings src"
-pytest = "pytest"
-all = ["format", "mypy", "ruff", "biome", "pytest"]
-
-
-[tool.poetry]
-name = "carte"
-version = "0.1.0"
-description = ""
-authors = ["Parnassius <Parnassius@users.noreply.github.com>"]
-
-[tool.poetry.dependencies]
-python = "^3.13"
-aiohttp = "3.11.11"
-aiohttp-jinja2 = "1.6"
-typenv = "0.2.0"
-
-[tool.poetry.group.dev.dependencies]
-mypy = "1.14.1"
-poethepoet = "0.32.0"
-pytest = "8.3.4"
-pytest-asyncio = "0.25.0"
-ruff = "0.8.4"
-
-[tool.poetry.scripts]
-carte = "carte.__main__:main"
-
-
-[tool.ruff]
-target-version = "py313"
 
 [tool.ruff.lint]
 select = [
@@ -101,9 +87,3 @@ ban-relative-imports = "all"
 
 [tool.ruff.lint.isort]
 split-on-trailing-comma = false
-
-
-[tool.pytest.ini_options]
-addopts = "--strict-config --strict-markers"
-asyncio_mode = "auto"
-xfail_strict = true
