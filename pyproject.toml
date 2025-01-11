@@ -17,16 +17,16 @@ warn_unreachable = true
 
 
 [tool.poe.tasks]
-ruff-fix = "ruff check carte tests --fix-only"
-ruff-format = "ruff format carte tests"
-prettier = "npx --no prettier carte/templates --write"
-prettier-check = "npx --no prettier carte/templates --check"
-biome-fix = "npx --no @biomejs/biome check carte --write"
+ruff-fix = "ruff check src tests --fix-only"
+ruff-format = "ruff format src tests"
+prettier = "npx --no prettier src/carte/templates --write"
+prettier-check = "npx --no prettier src/carte/templates --check"
+biome-fix = "npx --no @biomejs/biome check src --write"
 format = ["ruff-fix", "ruff-format", "prettier", "biome-fix"]
 
-mypy = "mypy carte tests"
-ruff = "ruff check carte tests"
-biome = "npx --no @biomejs/biome ci --error-on-warnings carte"
+mypy = "mypy src tests"
+ruff = "ruff check src tests"
+biome = "npx --no @biomejs/biome ci --error-on-warnings src"
 pytest = "pytest"
 all = ["format", "mypy", "ruff", "biome", "pytest"]
 

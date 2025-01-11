@@ -73,7 +73,7 @@ def main() -> None:
     env.read_env()
 
     port = env.int("PORT")
-    data_path = Path(__file__).parent.parent
+    data_path = Path(__file__).parent.parent.parent
     if data_path_ := env.str("DATA_PATH", default=""):
         data_path = Path(data_path_)
 
