@@ -3,8 +3,8 @@
 {% block head %}
   <link rel="stylesheet" href="{{ static("games/base.css") }}" />
   <link rel="stylesheet" href="{{ static("games/" ~ game ~ ".css") }}" />
-  <script type="module" src="{{ static("games/base.js") }}"></script>
-  <script type="module" src="{{ static("games/" ~ game ~ ".js") }}"></script>
+  <script type="module" src="{{ static('games/base.js') }}"></script>
+  <script type="module" src="{{ static('games/' ~ game ~ '.js') }}"></script>
 {% endblock %}
 
 {% block main %}

@@ -1,8 +1,8 @@
 {
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "prettier": "3.4.2",
-    "prettier-plugin-jinja-template": "1.5.0"
+    "prettier": "3.5.0",
+    "prettier-plugin-jinja-template": "2.0.0"
   },
   "prettier": {
     "plugins": ["prettier-plugin-jinja-template"],
