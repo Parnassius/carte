@@ -12,6 +12,7 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_FROZEN=1
 ENV UV_LINK_MODE=copy
 
+RUN apk upgrade --no-cache
 RUN apk add --no-cache gcc musl-dev libffi-dev
 
 COPY --from=ghcr.io/astral-sh/uv@sha256:a0c0e6aed043f5138957ea89744536eed81f1db633dc9bb3be2b882116060be2 /uv /bin/uv
