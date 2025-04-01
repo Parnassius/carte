@@ -1,5 +1,3 @@
-# noqa: A005
-
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
