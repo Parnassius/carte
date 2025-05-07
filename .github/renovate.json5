@@ -13,7 +13,7 @@
             datasourceTemplate: "github-runners",
             depTypeTemplate: "github-runner",
             versioningTemplate: "docker",
-            fileMatch: ["^\\.github/workflows/.+\\.ya?ml$"],
+            managerFilePatterns: ["/^\\.github/workflows/.+\\.ya?ml$/"],
             matchStrings: [
                 "[\"']?(?<depName>[^\\s]+?)-(?<currentValue>[^\\s]+?)[\"']?\\s+# renovate: github-runner",
             ],
