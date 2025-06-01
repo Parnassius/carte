@@ -403,7 +403,7 @@ class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
                 card_numbers[-1].append(str(card.number) if card is not None else "0")
 
         primiera_cards = []
-        for i, suit in enumerate(Suit):  # type: ignore[assignment]
+        for i, suit in enumerate(Suit):
             primiera_cards.append(str(suit))
             primiera_cards.extend(cn[i] for cn in card_numbers)
 

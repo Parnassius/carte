@@ -51,7 +51,7 @@ type CmdFunc[**P] = Callable[P, Awaitable[None]]
 
 
 @dataclass
-class Command[F: CmdFunc[...]]:  # type: ignore[misc]
+class Command[F: CmdFunc[...]]:
     func: F
     current_player: bool
     other_arguments: dict[str, Enum]

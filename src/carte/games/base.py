@@ -113,8 +113,7 @@ class BaseGame[T_Player: Player]:
 
     def _shuffle_deck(self) -> list[Card]:
         cards = [
-            Card(suit, number)  # type: ignore[arg-type]
-            for suit, number in itertools.product(Suit, CardNumber)
+            Card(suit, number) for suit, number in itertools.product(Suit, CardNumber)
         ]
         random.shuffle(cards)
         return cards
