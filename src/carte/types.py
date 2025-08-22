@@ -1,8 +1,11 @@
+from __future__ import annotations
+
+import itertools
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum, StrEnum, auto
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from aiohttp import web
 
@@ -18,11 +21,36 @@ class GameStatus(Enum):
     ENDED = auto()
 
 
+class CardFamily(StrEnum):
+    ITALIANE = auto()
+    FRANCESI = auto()
+
+
 class Suit(StrEnum):
     BASTONI = auto()
     COPPE = auto()
     DENARI = auto()
     SPADE = auto()
+
+    CUORI = auto()
+    QUADRI = auto()
+    FIORI = auto()
+    PICCHE = auto()
+
+    ROSSO = auto()
+    NERO = auto()
+
+    @classmethod
+    def get_italian(cls) -> list[Suit]:
+        return [cls.BASTONI, cls.COPPE, cls.DENARI, cls.SPADE]
+
+    @classmethod
+    def get_french(cls) -> list[Suit]:
+        return [cls.CUORI, cls.QUADRI, cls.FIORI, cls.PICCHE]
+
+    @classmethod
+    def get_french_joker(cls) -> list[Suit]:
+        return [cls.ROSSO, cls.NERO]
 
 
 class CardNumber(StrEnum):
@@ -33,18 +61,81 @@ class CardNumber(StrEnum):
     CINQUE = "5"
     SEI = "6"
     SETTE = "7"
+    OTTO = "8"
+    NOVE = "9"
+    DIECI = "10"
+
     FANTE = auto()
     CAVALLO = auto()
     RE = auto()
+
+    JACK = auto()
+    DONNA = auto()
+    # RE = auto()
+
+    JOKER = auto()
+
+    @classmethod
+    def get_numbers(cls, n: int) -> list[CardNumber]:
+        return list(CardNumber)[:n]
+
+    @classmethod
+    def get_italian(cls) -> list[CardNumber]:
+        return [*cls.get_numbers(7), cls.FANTE, cls.CAVALLO, cls.RE]
+
+    @classmethod
+    def get_french(cls) -> list[CardNumber]:
+        return [*cls.get_numbers(10), cls.JACK, cls.DONNA, cls.RE]
+
+
+class CardBack(StrEnum):
+    BLU = auto()
+    ROSSO = auto()
+
+    NONE = auto()
 
 
 @dataclass(frozen=True)
 class Card:
     suit: Suit
     number: CardNumber
+    back: CardBack = CardBack.NONE
 
     def __str__(self) -> str:
-        return f"{self.suit}:{self.number}"
+        return f"{self.suit}:{self.number}" + (
+            f":{self.back}" if self.back is not CardBack.NONE else ""
+        )
+
+    @classmethod
+    def get_italian_deck(cls) -> list[Card]:
+        numbers = CardNumber.get_italian()
+        suits = Suit.get_italian()
+
+        return [
+            Card(suit, number) for suit, number in itertools.product(suits, numbers)
+        ]
+
+    @classmethod
+    def get_french_deck(
+        cls, count: Literal[1, 2] = 1, has_joker: bool = False
+    ) -> list[Card]:
+        numbers = CardNumber.get_french()
+        suits = Suit.get_french()
+
+        cards: list[Card] = []
+        backs = cast(list[CardBack], list(CardBack))[:count]
+        for back in backs:
+            cards.extend(
+                Card(suit, number, back)
+                for suit, number in itertools.product(suits, numbers)
+            )
+
+            if has_joker:
+                cards.extend(
+                    Card(s, CardNumber.JOKER, back) for s in Suit.get_french_joker()
+                )
+
+        return cards
 
 
 type CmdFunc[**P] = Callable[P, Awaitable[None]]
@@ -56,7 +147,7 @@ class Command[F: CmdFunc[...]]:
     current_player: bool
     other_arguments: dict[str, Enum]
 
-    def check(self, game: "BaseGame[Any]", ws: web.WebSocketResponse) -> None:
+    def check(self, game: BaseGame[Any], ws: web.WebSocketResponse) -> None:
         for name, value in self.other_arguments.items():
             attr = getattr(game, f"_{name}")
             if attr is not value:
@@ -70,7 +161,7 @@ class Command[F: CmdFunc[...]]:
 
 @dataclass
 class SavedGame:
-    game: "BaseGame[Player]"
+    game: BaseGame[Player]
     version: int
     last_saved: datetime = field(default_factory=lambda: datetime.now(UTC), init=False)
 
