@@ -8,3 +8,4 @@ wheels
 /node_modules
 .env
 /games
+.*.dir
