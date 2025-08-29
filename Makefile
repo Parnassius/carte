@@ -1,3 +1,14 @@
+.venv: uv.lock
+	@uv sync
+	@touch .venv
+
+node_modules: package-lock.json
+	@npm ci
+	@touch node_modules
+
+.PHONY: deps
+deps: .venv node_modules
+
 .PHONY: format
 format:
 	@uv run ruff check src tests --fix-only
