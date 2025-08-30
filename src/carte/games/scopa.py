@@ -21,7 +21,7 @@ class ScopaPlayer(Player):
         self.scopa_cards.clear()
 
 
-class Scopa(BaseGame[ScopaPlayer], version=1, number_of_players=2, hand_size=6):
+class Scopa(BaseGame[ScopaPlayer], number_of_players=2, hand_size=6):
     def __init__(self, game_id: str) -> None:
         super().__init__(game_id)
 

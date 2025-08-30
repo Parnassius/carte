@@ -112,7 +112,7 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
             and game._game_status is not GameStatus.NOT_STARTED
         ):
             with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:
-                shelf[f"{game_type}__{game_id}"] = SavedGame(game, game.version)
+                shelf[f"{game_type}__{game_id}"] = SavedGame(game)
 
         request.app[app_keys.websockets].discard(ws)
 

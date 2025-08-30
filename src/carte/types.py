@@ -71,16 +71,11 @@ class Command[F: CmdFunc[...]]:
 @dataclass
 class SavedGame:
     game: "BaseGame[Player]"
-    version: int
     last_saved: datetime = field(default_factory=lambda: datetime.now(UTC), init=False)
 
     @property
     def is_valid(self) -> bool:
-        if self.last_saved + timedelta(days=7) < datetime.now(UTC):
-            return False
-        if self.version != type(self.game).version:
-            return False
-        return True
+        return self.last_saved + timedelta(days=7) >= datetime.now(UTC)
 
 
 Sendable = str | int | Card

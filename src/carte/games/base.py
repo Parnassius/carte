@@ -59,7 +59,6 @@ class BaseGame[T_Player: Player]:
     WAITING_GAMES_IDS: ClassVar[dict[type["BaseGame[Any]"], str]] = {}
 
     player_class: type[T_Player]
-    version: int
     game_name: str
     number_of_players: int
     hand_size: int
@@ -78,7 +77,6 @@ class BaseGame[T_Player: Player]:
     def __init_subclass__(
         cls,
         *,
-        version: int,
         game_name: str | None = None,
         number_of_players: int,
         hand_size: int,
@@ -92,7 +90,6 @@ class BaseGame[T_Player: Player]:
                 if issubclass(get_origin(x), BaseGame)
             )
         )[0]
-        cls.version = version
         cls.game_name = game_name or cls.__name__
         cls.number_of_players = number_of_players
         cls.hand_size = hand_size
