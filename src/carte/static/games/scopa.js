@@ -25,7 +25,7 @@ class Scopa extends BaseGame {
   }
 
   getPlayerIdentifier(playerId) {
-    return Number.parseInt(playerId) === this.playerSide ? "self" : "opponent";
+    return Number.parseInt(playerId, 10) === this.playerSide ? "self" : "opponent";
   }
 
   onGameAreaClick(event) {
@@ -194,7 +194,7 @@ class Scopa extends BaseGame {
     // move the card in hand to either the scopa count or the points deck
     const handCardField = this.cardFields.get("hand").select("player", player);
     const dest = (
-      Number.parseInt(isScopa) > 0
+      Number.parseInt(isScopa, 10) > 0
         ? this.cardFields.get("points-scopa")
         : this.decks.get("points")
     ).select("player", player);
@@ -296,7 +296,7 @@ class Scopa extends BaseGame {
       detailDiv.dataset.detailType = type;
       detailDiv.append(`${resultsTitles.get(type)}: `);
 
-      const value = Number.parseInt(args[playerId]);
+      const value = Number.parseInt(args[playerId], 10);
       if (type === "primiera") {
         const cardValues = args
           .slice(2)
@@ -305,7 +305,7 @@ class Scopa extends BaseGame {
             if (["fante", "cavallo", "re"].includes(v)) {
               return v[0].toUpperCase();
             }
-            const n = Number.parseInt(v);
+            const n = Number.parseInt(v, 10);
             if (n === 1) {
               return "A";
             }
@@ -321,7 +321,7 @@ class Scopa extends BaseGame {
       }
 
       if (type !== "scopa") {
-        if (value > Number.parseInt(args[1 - playerId])) {
+        if (value > Number.parseInt(args[1 - playerId], 10)) {
           detailDiv.classList.add("winner");
         }
       } else if (value > 0) {
@@ -333,7 +333,7 @@ class Scopa extends BaseGame {
   cmdResults(...results) {
     const table = document.getElementById("results-table");
     const sortedResults = Array.from(
-      results.map((n) => Number.parseInt(n)).entries(),
+      results.map((n) => Number.parseInt(n, 10)).entries(),
     ).sort(([, a], [, b]) => b - a);
 
     const rows = Array.from(table.querySelectorAll("tr"));

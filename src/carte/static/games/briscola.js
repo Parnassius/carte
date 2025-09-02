@@ -25,7 +25,7 @@ class Briscola extends BaseGame {
   }
 
   getPlayerIdentifier(playerId) {
-    return Number.parseInt(playerId) === this.playerSide ? "self" : "opponent";
+    return Number.parseInt(playerId, 10) === this.playerSide ? "self" : "opponent";
   }
 
   onGameAreaClick(event) {

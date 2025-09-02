@@ -115,7 +115,7 @@ class Deck extends CardGroup {
 
   get count() {
     const deck = this.game.gameArea.querySelector(this.getSelector());
-    return Number.parseInt(deck.dataset.deckCount);
+    return Number.parseInt(deck.dataset.deckCount, 10);
   }
 
   addCount(delta) {
@@ -195,8 +195,8 @@ class CardField extends CardGroup {
       }
 
       return (
-        Number.parseInt(c1.dataset.fieldPosition) -
-        Number.parseInt(c2.dataset.fieldPosition)
+        Number.parseInt(c1.dataset.fieldPosition, 10) -
+        Number.parseInt(c2.dataset.fieldPosition, 10)
       );
     });
 
@@ -277,7 +277,7 @@ class BaseGame {
   }
 
   isPlayerSelf(playerId) {
-    return Number.parseInt(playerId) === this.playerId;
+    return Number.parseInt(playerId, 10) === this.playerId;
   }
 
   get styleRules() {
@@ -619,7 +619,7 @@ class BaseGame {
   }
 
   cmdPlayerId(playerId) {
-    this.playerId = Number.parseInt(playerId);
+    this.playerId = Number.parseInt(playerId, 10);
     this.gameArea.dataset.playerId = playerId;
   }
 
@@ -693,7 +693,7 @@ class BaseGame {
   cmdResults(...results) {
     const table = document.getElementById("results-table");
     const sortedResults = Array.from(
-      results.map((n) => Number.parseInt(n)).entries(),
+      results.map((n) => Number.parseInt(n, 10)).entries(),
     ).sort(([, a], [, b]) => b - a);
     for (const [playerId, points] of sortedResults) {
       const row = table.insertRow();
