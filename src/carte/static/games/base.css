@@ -62,9 +62,11 @@
       rotate: calc(var(--card-rotation) * 90deg);
 
       @starting-style {
+        /* biome-ignore-start lint/complexity/noImportantStyles: overrides */
         top: var(--card-starting-y) !important;
         left: var(--card-starting-x) !important;
         rotate: calc(var(--card-starting-rotation) * 90deg) !important;
+        /* biome-ignore-end lint/complexity/noImportantStyles: overrides */
       }
 
       &::after {

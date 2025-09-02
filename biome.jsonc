@@ -3,4 +3,14 @@
     "useEditorconfig": true,
     "lineWidth": 88,  // Black's default
   },
+  "linter": {
+    "rules": {
+      "style": {
+        "noDescendingSpecificity": "off",  // https://github.com/biomejs/biome/issues/6050
+      },
+      "suspicious": {
+        "noDuplicateProperties": "off",  // https://github.com/biomejs/biome/issues/6014
+      },
+    },
+  },
 }
