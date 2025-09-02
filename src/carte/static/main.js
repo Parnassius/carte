@@ -1,6 +1,10 @@
 function setCookie(name, value) {
-  const encodedValue = encodeURIComponent(value);
-  document.cookie = `${name}=${encodedValue};max-age=${60 * 60 * 24 * 365};samesite=lax`;
+  cookieStore.set({
+    name: name,
+    value: encodeURIComponent(value),
+    expires: Date.now() + 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
 }
 
 function refreshCookies() {
