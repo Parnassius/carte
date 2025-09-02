@@ -31,12 +31,14 @@
 
 * {
   box-sizing: border-box;
+  /* biome-ignore-start lint/complexity/noImportantStyles: overrides */
   @media (prefers-reduced-motion) {
     transition-property: none !important;
   }
   [data-no-animations] & {
     transition-property: none !important;
   }
+  /* biome-ignore-end lint/complexity/noImportantStyles: overrides */
 }
 
 body {
@@ -154,7 +156,9 @@ header {
   &::before {
     top: 0.25em;
     height: 0.45em;
-    box-shadow: inset 0 0.075em 0 -0.025em, inset 0 -0.075em 0 -0.025em;
+    box-shadow:
+      inset 0 0.075em 0 -0.025em,
+      inset 0 -0.075em 0 -0.025em;
   }
   &::after {
     top: 0.45em;
@@ -250,7 +254,8 @@ header {
     &::after {
       inset: 0.1em 0.15em 0.55em 0.5em;
       background-color: currentColor;
-      mask-image: radial-gradient(at top left, transparent 36%, black 36%),
+      mask-image:
+        radial-gradient(at top left, transparent 36%, black 36%),
         radial-gradient(at top right, transparent 36%, black 36%),
         radial-gradient(at bottom left, transparent 36%, black 36%),
         radial-gradient(at bottom right, transparent 36%, black 36%);
