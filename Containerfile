@@ -12,8 +12,6 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_FROZEN=1
 ENV UV_LINK_MODE=copy
 
-RUN apk add --no-cache gcc musl-dev libffi-dev
-
 COPY --from=ghcr.io/astral-sh/uv /uv /bin/uv
 
 RUN --mount=type=cache,target=/root/.cache/uv \
