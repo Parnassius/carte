@@ -6,7 +6,7 @@ from tests.conftest import Game
 
 
 @pytest.mark.parametrize(
-    "seed, results",
+    ("seed", "results"),
     [
         (123, [50, 70]),
         (321, [60, 60]),

@@ -80,7 +80,7 @@ class BaseGame[T_Player: Player]:
         game_name: str | None = None,
         number_of_players: int,
         hand_size: int,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         super().__init_subclass__(**kwargs)
         cls.player_class = get_args(
@@ -133,9 +133,16 @@ class BaseGame[T_Player: Player]:
 
         return player
 
+    def remove_player(self, player: T_Player) -> None:
+        self._players.remove(player)
+
     @property
     def current_player(self) -> T_Player:
         return self._players[self._current_player_id]
+
+    @property
+    def game_status(self) -> GameStatus:
+        return self._game_status
 
     def _board_state(self, ws_player: T_Player | None) -> Iterator[list[Sendable]]:
         raise NotImplementedError

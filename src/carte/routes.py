@@ -102,15 +102,12 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
             player.websockets.discard(ws)
             if (
                 len(player.websockets) == 0
-                and game._game_status is GameStatus.NOT_STARTED
+                and game.game_status is GameStatus.NOT_STARTED
             ):
-                game._players.remove(player)
+                game.remove_player(player)
 
         game.websockets.discard(ws)
-        if (
-            len(game.websockets) == 0
-            and game._game_status is not GameStatus.NOT_STARTED
-        ):
+        if len(game.websockets) == 0 and game.game_status is not GameStatus.NOT_STARTED:
             with shelve.open(request.app[app_keys.games_shelf_path]) as shelf:
                 shelf[f"{game_type}__{game_id}"] = SavedGame(game)
 

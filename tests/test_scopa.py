@@ -7,7 +7,15 @@ from tests.conftest import Game
 
 
 @pytest.mark.parametrize(
-    "seed, res_cards, res_denari, res_primiera, res_settebello, res_scopa, results",
+    (
+        "seed",
+        "res_cards",
+        "res_denari",
+        "res_primiera",
+        "res_settebello",
+        "res_scopa",
+        "results",
+    ),
     [
         (
             843,

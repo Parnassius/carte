@@ -31,7 +31,7 @@ async def cleanup_saved_games(app: web.Application) -> None:
     async def _cleanup_saved_games() -> None:
         while True:
             with shelve.open(app[app_keys.games_shelf_path]) as shelf:
-                for key in shelf.keys():
+                for key in shelf:
                     try:
                         saved_game = shelf[key]
                     except Exception:
