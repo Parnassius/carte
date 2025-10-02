@@ -17,7 +17,11 @@
 
     --card-width-raw: calc(var(--card-width-inner) + var(--card-border-width-raw) * 2);
     --card-width: calc(var(--card-width-raw) * var(--unit));
-    --card-height-raw: calc(var(--card-height-inner) + var(--card-border-width-raw) * 2);
+    --card-height-raw: calc(
+         var(--card-height-inner) +
+         var(--card-border-width-raw) *
+         2
+    );
     --card-height: calc(var(--card-height-raw) * var(--unit));
 
     --card-border-width-raw: 0.006;
