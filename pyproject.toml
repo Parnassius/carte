@@ -1,7 +1,7 @@
 [project]
 name = "carte"
 version = "0.1.0"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "aiohttp==3.13.2",
     "aiohttp-jinja2==1.6",
@@ -25,7 +25,7 @@ build-backend = "hatchling.build"
 
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 strict = true
 
 # Disallow dynamic typing

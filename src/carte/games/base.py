@@ -55,8 +55,8 @@ class Player:
 
 
 class BaseGame[T_Player: Player]:
-    GAMES: ClassVar[dict[str, type["BaseGame[Any]"]]] = {}
-    WAITING_GAMES_IDS: ClassVar[dict[type["BaseGame[Any]"], str]] = {}
+    GAMES: ClassVar[dict[str, type[BaseGame[Any]]]] = {}
+    WAITING_GAMES_IDS: ClassVar[dict[type[BaseGame[Any]], str]] = {}
 
     player_class: type[T_Player]
     game_name: str
