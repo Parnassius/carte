@@ -37,10 +37,9 @@ disallow_any_decorated = true
 warn_unreachable = true
 
 
-[tool.pytest.ini_options]
-addopts = "--strict-config --strict-markers"
+[tool.pytest]
+strict = true
 asyncio_mode = "auto"
-xfail_strict = true
 
 
 [tool.ruff.lint]
