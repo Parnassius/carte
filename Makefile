@@ -1,13 +1,13 @@
-.venv.dir: uv.lock
+.venv: uv.lock
 	@uv sync
-	@touch .venv.dir
+	@touch .venv
 
-.node_modules.dir: package-lock.json
+node_modules: package-lock.json
 	@npm ci
-	@touch .node_modules.dir
+	@touch node_modules
 
 .PHONY: deps
-deps: .venv.dir .node_modules.dir
+deps: .venv node_modules
 
 .PHONY: format
 format:
