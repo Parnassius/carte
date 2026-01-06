@@ -10,31 +10,31 @@ node_modules: package-lock.json
 deps: .venv node_modules
 
 .PHONY: format
-format:
+format: deps
 	@uv run ruff check src tests --fix-only
 	@uv run ruff format src tests
-	@npx --no prettier src/carte/templates --write
-	@npx --no @biomejs/biome check src --write
+	@npm exec --offline -- prettier src/carte/templates --write
+	@npm exec --offline -- @biomejs/biome check src --write
 
 .PHONY: format-check
-format-check:
+format-check: deps
 	@uv run ruff format src tests --check
-	@npx --no prettier src/carte/templates --check
+	@npm exec --offline -- prettier src/carte/templates --check
 
 .PHONY: mypy
-mypy:
+mypy: deps
 	@uv run mypy src tests
 
 .PHONY: ruff
-ruff:
+ruff: deps
 	@uv run ruff check src tests
 
 .PHONY: biome
-biome:
-	@npx --no @biomejs/biome ci --error-on-warnings src
+biome: deps
+	@npm exec --offline -- @biomejs/biome ci --error-on-warnings src
 
 .PHONY: pytest
-pytest:
+pytest: deps
 	@uv run pytest
 
 .PHONY: lint
