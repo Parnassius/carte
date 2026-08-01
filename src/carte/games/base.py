@@ -281,7 +281,7 @@ class BaseGame[T_Player: Player]:
         try:
             cmd = getattr(self, f"cmd_{raw_cmd}")
             if not isinstance(cmd, Command):
-                raise TypeError  # noqa: TRY301
+                raise TypeError
         except (AttributeError, TypeError) as e:
             err = f"Invalid command {raw_cmd}"
             raise CmdError(err) from e
@@ -366,6 +366,6 @@ class BaseGame[T_Player: Player]:
             self._starting_player_id = (
                 self._starting_player_id + 1
             ) % self.number_of_players
-            for player in self._players:
-                player.reset()
+            for p in self._players:
+                p.reset()
             await self._prepare_start()

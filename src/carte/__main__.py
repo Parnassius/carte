@@ -34,7 +34,7 @@ async def cleanup_saved_games(app: web.Application) -> None:
                 for key in shelf:
                     try:
                         saved_game = shelf[key]
-                    except Exception:
+                    except Exception:  # noqa: BLE001
                         del shelf[key]
                     else:
                         if not saved_game.is_valid:
