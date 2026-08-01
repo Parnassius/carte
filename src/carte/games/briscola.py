@@ -91,21 +91,21 @@ class Briscola(BaseGame[Player], number_of_players=2, hand_size=3):
             winning_card: Card | None = None
             winning_player: Player
             card_order = list(self._card_points)
-            for player, card in self._played_cards.items():
+            for player, player_card in self._played_cards.items():
                 if (
                     winning_card is None
                     or (
-                        card.suit == winning_card.suit
-                        and card_order.index(card.number)
+                        player_card.suit == winning_card.suit
+                        and card_order.index(player_card.number)
                         > card_order.index(winning_card.number)
                     )
                     or (
-                        card.suit == self._briscola.suit
+                        player_card.suit == self._briscola.suit
                         and winning_card.suit != self._briscola.suit
                     )
                 ):
                     winning_player = player
-                    winning_card = card
+                    winning_card = player_card
 
             winning_player.points.extend(self._played_cards.values())
             self._played_cards.clear()
