@@ -9,6 +9,10 @@ node_modules: package-lock.json
 .PHONY: deps
 deps: .venv node_modules
 
+.PHONY: run
+run:
+	@uv run carte
+
 .PHONY: format
 format: deps
 	@uv run ruff check src tests --fix-only
