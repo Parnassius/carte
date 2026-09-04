@@ -28,12 +28,15 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM builder as test
 
-RUN apk add --no-cache nodejs npm
-RUN apk add --no-cache make
+RUN --mount=type=cache,target=/etc/apk/cache \
+    apk add nodejs npm
+RUN --mount=type=cache,target=/etc/apk/cache \
+    apk add make
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 RUN make lint
 RUN make pytest
