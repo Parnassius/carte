@@ -3,9 +3,9 @@ name = "carte"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
-    "aiohttp==3.14.3",
-    "aiohttp-jinja2==1.6",
-    "typenv==0.2.0",
+    "aiohttp",
+    "aiohttp-jinja2",
+    "typenv",
 ]
 
 [project.scripts]
@@ -13,10 +13,10 @@ carte = "carte.__main__:main"
 
 [dependency-groups]
 dev = [
-    "mypy==2.3.1",
-    "pytest==9.1.1",
-    "pytest-asyncio==1.4.0",
-    "ruff==0.16.5",
+    "mypy",
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
 ]
 
 [build-system]
